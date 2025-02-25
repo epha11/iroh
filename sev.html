@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #000000; /* Black background */
+            color: #cccccc; /* Light gray text */
+        }
+        .navbar {
+            background-color: #0078d4; /* Blue background */
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .navbar h1 {
+            margin: 0;
+        }
+        .container {
+            display: flex;
+            height: calc(100vh - 60px);
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #1c1c1c; /* Dark gray background */
+            color: white;
+            padding: 15px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+        }
+        .sidebar h2 {
+            color: #0078d4; /* Blue color */
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            color: white;
+            padding: 10px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .sidebar a:hover {
+            background-color: #333333; /* Darker gray for hover effect */
+        }
+        .sidebar i {
+            margin-right: 10px;
+        }
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            background-color: #000000; /* Black background */
+            overflow-y: auto;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .section h3 {
+            margin-bottom: 10px;
+            color: #0078d4; /* Blue color */
+        }
+        .card {
+            background-color: #1c1c1c; /* Dark gray background */
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .card i {
+            font-size: 40px;
+            margin-right: 15px;
+            color: #0078d4; /* Blue color */
+        }
+        .card button {
+            background-color: #0078d4; /* Blue background */
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .card button:hover {
+            background-color: #005a9e; /* Darker blue */
+        }
+        .card p {
+            margin: 0;
+        }
+        .user-profile, .add-user {
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #333333; /* Darker gray border */
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .user-profile img, .add-user img {
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            margin-right: 15px;
+        }
+        .user-profile div, .add-user div {
+            flex: 1;
+        }
+        .user-profile h4, .add-user h4 {
+            margin: 0;
+            color: #0078d4; /* Blue color */
+        }
+        .user-profile p, .add-user p {
+            margin: 5px 0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #333333; /* Darker gray border */
+            border-radius: 4px;
+            background-color: #1c1c1c; /* Dark gray background */
+            color: #cccccc; /* Light gray text */
+        }
+        .form-group button {
+            background-color: #0078d4; /* Blue background */
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .form-group button:hover {
+            background-color: #005a9e; /* Darker blue */
+        }
+        .user-list {
+            margin-top: 20px;
+        }
+        .user-list .user-profile {
+            border-bottom: 1px solid #333333;
+            margin-bottom: 10px;
+        }
+        .user-list .user-profile img {
+            width: 60px;
+            height: 60px;
+        }
+        .user-list .user-profile div {
+            flex: 1;
+        }
+        .user-list .user-profile button {
+            display: none; /* Hide button for added users */
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>System Dashboard</h1>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <h2>Navigation</h2>
+            <a href="#" onclick="showSection('overview')"><i class="fas fa-tachometer-alt"></i> Overview</a>
+            <a href="#" onclick="showSection('settings')"><i class="fas fa-cogs"></i> Settings</a>
+            <a href="#" onclick="showSection('reports')"><i class="fas fa-file-alt"></i> Reports</a>
+            <a href="#" onclick="showSection('users')"><i class="fas fa-users"></i> User Management</a>
+            <a href="#" onclick="showSection('system')"><i class="fas fa-desktop"></i> System Info</a>
+            <a href="#" onclick="showSection('analytics')"><i class="fas fa-chart-line"></i> Analytics</a>
+            <a href="#" onclick="showSection('support')"><i class="fas fa-life-ring"></i> Support</a>
+            <a href="#" onclick="showSection('power')"><i class="fas fa-power-off"></i> Power</a>
+            <a href="#" onclick="showSection('time-language')"><i class="fas fa-clock"></i> Time & Language</a>
+            
+        </div>
+        <div class="main-content">
+            <div id="overview" class="section">
+                <h3>Overview</h3>
+                <div class="card">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <div>
+                        <h4>System Status</h4>
+                        <p>Check the current system status and performance metrics.</p>
+                        <button onclick="alert('System Status Checked')">Check Status</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="settings" class="section" style="display:none;">
+                <h3>Settings</h3>
+                <div class="card">
+                    <i class="fas fa-cogs"></i>
+                    <div>
+                        <h4>Update Preferences</h4>
+                        <p>Adjust your settings and preferences here.</p>
+                        <button onclick="alert('Settings Updated')">Update Settings</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="reports" class="section" style="display:none;">
+                <h3>Reports</h3>
+                <div class="card">
+                    <i class="fas fa-file-alt"></i>
+                    <div>
+                        <h4>Generate Report</h4>
+                        <p>Create and download various reports from here.</p>
+                        <button onclick="alert('Report Generated')">Generate Report</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="users" class="section" style="display:none;">
+                <h3>User Management</h3>
+
+                <div class="user-profile" id="original-user">
+                    <img src="bass.jpeg" alt="User Profile">
+                    <div>
+                        <h4>Emily Larra</h4>
+                        <p><strong>Account Type:</strong>Administrator</p>
+                        <p><strong>Email:</strong> isv61e@gmail.com</p>
+                        <button onclick="switchUser()">Switch User</button>
+                    </div>
+                </div>
+
+                <div class="user-list">
+                    <!-- Newly added users will be displayed here -->
+                </div>
+
+                <div class="add-user">
+                    <img src="https://via.placeholder.com/80" alt="Add User">
+                    <div>
+                        <h4>Add New User</h4>
+                        <form id="add-user-form" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label for="new-user-name">Name:</label>
+                                <input type="text" id="new-user-name" placeholder="Enter name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="new-user-email">Email:</label>
+                                <input type="email" id="new-user-email" placeholder="Enter email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="new-user-type">Account Type:</label>
+                                <select id="new-user-type">
+                                    <option value="admin">Admin</option>
+                                    <option value="user">User</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="new-user-pic">Profile Picture:</label>
+                                <input type="file" id="new-user-pic" accept="image/*">
+                            </div>
+                            <div class="form-group">
+                                <label for="user-restriction">Restrictions:</label>
+                                <select id="user-restriction">
+                                    <option value="none">None</option>
+                                    <option value="read">Read Only</option>
+                                    <option value="write">Write Access</option>
+                                    <option value="admin">Administrator</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <button type="button" onclick="addUser()">Add User</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="change-password">
+                    <h4>Change Password</h4>
+                    <form id="change-password-form">
+                        <div class="form-group">
+                            <label for="current-password">Current Password:</label>
+                            <input type="password" id="current-password" placeholder="Current password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-password">New Password:</label>
+                            <input type="password" id="new-password" placeholder="New password" required>
+                        </div>
+                        <div class="form-group">
+                            <button type="button" onclick="changePassword()">Change Password</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="system" class="section" style="display:none;">
+                <h3>System Info</h3>
+                <div class="card">
+                    <i class="fas fa-desktop"></i>
+                    <div>
+                        <h4>System Information</h4>
+                        <p>View detailed system information and statistics.</p>
+                        <button onclick="alert('System Information Viewed')">View Info</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="analytics" class="section" style="display:none;">
+                <h3>Analytics</h3>
+                <div class="card">
+                    <i class="fas fa-chart-line"></i>
+                    <div>
+                        <h4>View Analytics</h4>
+                        <p>Analyze system performance and user activity.</p>
+                        <button onclick="alert('Analytics Viewed')">View Analytics</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="support" class="section" style="display:none;">
+                <h3>Support</h3>
+                <div class="card">
+                    <i class="fas fa-life-ring"></i>
+                    <div>
+                        <h4>Contact Support</h4>
+                        <p>Get in touch with our support team for assistance.</p>
+                        <button onclick="alert('Support Contacted')">Contact Support</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(sectionId).style.display = 'block';
+        }
+
+        function switchUser() {
+            alert('Switching User');
+        }
+
+        function addUser() {
+            const name = document.getElementById('new-user-name').value;
+            const email = document.getElementById('new-user-email').value;
+            const type = document.getElementById('new-user-type').value;
+            const picture = document.getElementById('new-user-pic').files[0];
+            const restriction = document.getElementById('user-restriction').value;
+
+            if (!name || !email || !type) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            const userList = document.querySelector('.user-list');
+
+            // Create a new user profile element
+            const newUserProfile = document.createElement('div');
+            newUserProfile.className = 'user-profile';
+
+            // Set up profile picture
+            const userImage = document.createElement('img');
+            userImage.src = picture ? URL.createObjectURL(picture) : 'https://via.placeholder.com/80';
+            userImage.alt = 'New User Profile';
+
+            // Create profile details
+            const userDetails = document.createElement('div');
+            userDetails.innerHTML = `
+                <h4>${name}</h4>
+                <p><strong>Account Type:</strong> ${type.charAt(0).toUpperCase() + type.slice(1)}</p>
+                <p><strong>Email:</strong> ${email}</p>
+                <p><strong>Restrictions:</strong> ${restriction.charAt(0).toUpperCase() + restriction.slice(1)}</p>
+            `;
+
+            // Append elements to user profile
+            newUserProfile.appendChild(userImage);
+            newUserProfile.appendChild(userDetails);
+
+            // Add new user profile to the list
+            userList.appendChild(newUserProfile);
+
+            // Clear the form
+            document.getElementById('add-user-form').reset();
+        }
+
+        function changePassword() {
+            alert('Password Changed');
+        }
+    </script>
+
+    <!-- Sidebar HTML -->
+<div id="sidebar">
+    <ul>
+      <li><a href="#power" id="power-btn">Power</a></li>
+      <li><a href="#time-language" id="time-language-btn">Time & Language</a></li>
+    </ul>
+  </div>
+  
+  <!-- Power Page -->
+  <div id="power" class="page-content">
+    <h2>Power Options</h2>
+    <div class="power-options">
+      <button id="power-off"><img src="path/to/power-off-icon.png" alt="Power Off">Power Off</button>
+      <button id="sign-out"><img src="path/to/sign-out-icon.png" alt="Sign Out">Sign Out</button>
+      <button id="lock"><img src="path/to/lock-icon.png" alt="Lock">Lock</button>
+      <button id="change-user"><img src="path/to/change-user-icon.png" alt="Change User">Change User</button>
+      <button id="sleep"><img src="path/to/sleep-icon.png" alt="Sleep">Sleep</button>
+      <button id="restart"><img src="path/to/restart-icon.png" alt="Restart">Restart</button>
+    </div>
+  </div>
+  
+  <!-- Time & Language Page -->
+  <div id="time-language" class="page-content">
+    <h2>Time & Language Settings</h2>
+    <div class="language-options">
+      <label for="language-selector">Select Language:</label>
+      <select id="language-selector">
+        <option value="ru">Russian</option>
+        <option value="be">Belarussian</option>
+        <option value="ar">Arabic</option>
+        <option value="en">English</option>
+        <option value="de">German</option>
+        <option value="ro">Romanian</option>
+        <option value="ja">Japanese</option>
+      </select>
+    </div>
+  
+    <div class="timezone-options">
+      <label for="timezone-selector">Select Timezone:</label>
+      <select id="timezone-selector">
+        <option value="ru">Russia Timezone</option>
+        <option value="be">Belarus Timezone</option>
+        <option value="ar">Arabic Timezone</option>
+        <option value="en">English Timezone</option>
+        <option value="de">Germany Timezone</option>
+        <option value="ro">Romania Timezone</option>
+        <option value="ja">Japan Timezone</option>
+      </select>
+    </div>
+  </div>
+  
+  <!-- JavaScript -->
+  <script>
+    // Handle language change
+    document.getElementById('language-selector').addEventListener('change', function(event) {
+      let selectedLanguage = event.target.value;
+      alert("Language changed to: " + selectedLanguage);
+      // Implement actual language change logic here
+    });
+  
+    // Handle timezone change
+    document.getElementById('timezone-selector').addEventListener('change', function(event) {
+      let selectedTimezone = event.target.value;
+      alert("Timezone changed to: " + selectedTimezone);
+      // Implement actual timezone change logic here
+    });
+  
+    // Handle Power button actions (Add respective actions for each button)
+    document.getElementById('power-off').addEventListener('click', function() {
+      alert("Powering off...");
+      // Implement power off logic here
+    });
+  
+    document.getElementById('sign-out').addEventListener('click', function() {
+      alert("Signing out...");
+      // Implement sign-out logic here
+    });
+  
+    document.getElementById('lock').addEventListener('click', function() {
+      alert("Locking screen...");
+      // Implement lock screen logic here
+    });
+  
+    document.getElementById('change-user').addEventListener('click', function() {
+      alert("Changing user...");
+      // Implement change user logic here
+    });
+  
+    document.getElementById('sleep').addEventListener('click', function() {
+      alert("Going to sleep...");
+      // Implement sleep logic here
+    });
+  
+    document.getElementById('restart').addEventListener('click', function() {
+      alert("Restarting system...");
+      // Implement restart logic here
+    });
+  </script>
+  
+  <!-- CSS (You can add this to your style sheet) -->
+  <style>
+    #sidebar {
+      width: 200px;
+      background-color: #333;
+      color: white;
+      padding: 10px;
+    }
+  
+    #sidebar ul {
+      list-style-type: none;
+    }
+  
+    #sidebar ul li a {
+      color: white;
+      text-decoration: none;
+      display: block;
+      padding: 10px;
+    }
+  
+    .page-content {
+      margin-left: 220px;
+      padding: 20px;
+    }
+  
+    .power-options button {
+      margin: 10px;
+      padding: 10px;
+      border: none;
+      background-color: #444;
+      color: white;
+      cursor: pointer;
+    }
+  
+    .language-options, .timezone-options {
+      margin: 20px 0;
+    }
+  
+    select {
+      padding: 10px;
+      font-size: 16px;
+    }
+  </style>
+  
+</body>
+</html>

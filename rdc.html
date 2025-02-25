@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remote Desktop App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, select, button {
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .status {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #007bff;
+        }
+        .status.error {
+            color: #dc3545;
+        }
+        .status.success {
+            color: #28a745;
+        }
+        .tooltip {
+            display: none;
+            position: absolute;
+            background-color: #333;
+            color: #fff;
+            padding: 5px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .input-wrapper {
+            position: relative;
+        }
+        .input-wrapper:hover .tooltip {
+            display: block;
+        }
+        .settings {
+            margin-top: 20px;
+        }
+        .settings label {
+            margin-right: 10px;
+        }
+        .settings input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Remote Desktop Connection</h1>
+        <form id="remoteForm">
+            <label for="protocol">Protocol</label>
+            <select id="protocol">
+                <option value="vnc">VNC</option>
+                <option value="rdp">RDP</option>
+            </select>
+            <label for="hostname">Hostname/IP</label>
+            <input type="text" id="hostname" placeholder="Enter hostname or IP address">
+            <label for="port">Port</label>
+            <input type="text" id="port" placeholder="Enter port (default: 5900 for VNC, 3389 for RDP)">
+            <label for="username">Username</label>
+            <input type="text" id="username" placeholder="Enter username">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter password">
+            <button type="submit">Connect</button>
+        </form>
+
+        <div id="status" class="status"></div>
+
+        <!-- New Features Section -->
+        <div class="settings">
+            <h2>Additional Settings</h2>
+            <div class="input-wrapper">
+                <label for="autoReconnect">Enable Auto-Reconnect</label>
+                <input type="checkbox" id="autoReconnect">
+                <div class="tooltip">Automatically reconnect if connection drops</div>
+            </div>
+            <div class="input-wrapper">
+                <label for="sound">Enable Sound</label>
+                <input type="checkbox" id="sound">
+                <div class="tooltip">Transmit sound from the remote system</div>
+            </div>
+            <div class="input-wrapper">
+                <label for="clipboard">Enable Clipboard Sharing</label>
+                <input type="checkbox" id="clipboard">
+                <div class="tooltip">Allow clipboard access between local and remote systems</div>
+            </div>
+            <div class="input-wrapper">
+                <label for="fullscreen">Enable Fullscreen Mode</label>
+                <input type="checkbox" id="fullscreen">
+                <div class="tooltip">Open the session in fullscreen mode</div>
+            </div>
+            <div class="input-wrapper">
+                <label for="compression">Enable Compression</label>
+                <input type="checkbox" id="compression">
+                <div class="tooltip">Enable compression to optimize bandwidth</div>
+            </div>
+            <div class="input-wrapper">
+                <label for="logging">Enable Logging</label>
+                <input type="checkbox" id="logging">
+                <div class="tooltip">Log connection details for troubleshooting</div>
+            </div>
+        </div>
+
+        <div id="advancedSettings" class="settings">
+            <h2>Advanced Settings</h2>
+            <div class="input-wrapper">
+                <label for="colorDepth">Color Depth</label>
+                <select id="colorDepth">
+                    <option value="16">16-bit</option>
+                    <option value="24">24-bit</option>
+                    <option value="32">32-bit</option>
+                </select>
+                <div class="tooltip">Select color depth for the session</div>
+            </div>
+            <div class="input-wrapper">
+                <label for="screenResolution">Screen Resolution</label>
+                <select id="screenResolution">
+                    <option value="1024x768">1024x768</option>
+                    <option value="1280x1024">1280x1024</option>
+                    <option value="1920x1080">1920x1080</option>
+                    <option value="2560x1440">2560x1440</option>
+                </select>
+                <div class="tooltip">Select screen resolution for the session</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('remoteForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            // Gather input values
+            const protocol = document.getElementById('protocol').value;
+            const hostname = document.getElementById('hostname').value;
+            const port = document.getElementById('port').value || (protocol === 'vnc' ? '5900' : '3389');
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // New Features Interaction
+            const autoReconnect = document.getElementById('autoReconnect').checked;
+            const sound = document.getElementById('sound').checked;
+            const clipboard = document.getElementById('clipboard').checked;
+            const fullscreen = document.getElementById('fullscreen').checked;
+            const compression = document.getElementById('compression').checked;
+            const logging = document.getElementById('logging').checked;
+
+            const colorDepth = document.getElementById('colorDepth').value;
+            const screenResolution = document.getElementById('screenResolution').value;
+
+            // Basic validation
+            if (!hostname || !username || !password) {
+                document.getElementById('status').innerText = 'Please fill in all required fields.';
+                document.getElementById('status').className = 'status error';
+                return;
+            }
+
+            // Simulate connection attempt
+            document.getElementById('status').innerText = `Connecting to ${protocol.toUpperCase()} server at ${hostname}:${port}...`;
+            document.getElementById('status').className = 'status';
+
+            // Log settings for debugging
+            if (logging) {
+                console.log('Connection Settings:', { protocol, hostname, port, username, colorDepth, screenResolution });
+            }
+
+            // Placeholder for actual connection logic
+            setTimeout(() => {
+                document.getElementById('status').innerText = `Connected to ${protocol.toUpperCase()} server at ${hostname}:${port}`;
+                document.getElementById('status').className = 'status success';
+                if (autoReconnect) {
+                    document.getElementById('status').innerText += ' (Auto-Reconnect Enabled)';
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows Terminal Replica</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Consolas, 'Courier New', monospace;
+            background: url('same.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #00AFFF; /* Matches CMD color 9 */
+            overflow: hidden;
+        }
+
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Dimmed background overlay */
+            z-index: 1;
+        }
+
+        #terminal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            z-index: 2;
+            overflow-y: auto; /* Allow scrolling */
+        }
+
+        .line {
+            display: block;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .input-line {
+            display: flex;
+        }
+
+        .prompt {
+            color: #00AFFF; /* Matches CMD color 9 */
+        }
+
+        .user-input {
+            flex-grow: 1;
+            outline: none;
+            border: none;
+            background: none;
+            color: #00AFFF; /* Matches CMD color 9 */
+            font-family: inherit;
+            font-size: inherit;
+        }
+
+        ::selection {
+            background: rgba(0, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="overlay"></div>
+    <div id="terminal">
+        <div id="output">
+            <span class="line">Microsoft Windows [Version 10.0.22000.1]</span>
+            <span class="line">(c) Microsoft Corporation. All rights reserved.</span>
+            <br>
+        </div>
+        <div class="input-line">
+            <span class="prompt" id="prompt">C:\\Users\\isv61&gt;</span>
+            <input type="text" id="user-input" class="user-input" autofocus>
+        </div>
+    </div>
+
+    <script src="commands.js"></script> <!-- Link to commands.js file -->
+    <script>
+        const outputElement = document.getElementById('output');
+        const inputElement = document.getElementById('user-input');
+        const promptElement = document.getElementById('prompt');
+
+        let currentDir = 'C:\\Users\\isv61'; // Default directory
+
+        inputElement.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                const input = inputElement.value.trim();
+
+                // If input is empty, add a new line with the same prompt
+                if (input === '') {
+                    const commandLine = document.createElement('span');
+                    commandLine.className = 'line';
+                    commandLine.textContent = `${currentDir}&gt;`; // Show the current dir as the prompt
+                    outputElement.appendChild(commandLine);
+
+                    const blankLine = document.createElement('br');
+                    outputElement.appendChild(blankLine);
+
+                    inputElement.value = '';
+                    window.scrollTo(0, document.body.scrollHeight);
+                    return;
+                }
+
+                const [command, ...args] = input.split(/\s+/);
+                const commandLine = document.createElement('span');
+                commandLine.className = 'line';
+                commandLine.textContent = `${currentDir}&gt; ${input}`;
+                outputElement.appendChild(commandLine);
+
+                let response;
+                if (commands[command]) {
+                    response = commands[command](args);
+                } else {
+                    response = `'${command}' is not recognized as an internal or external command, operable program or batch file.`;
+                }
+
+                if (response) {
+                    const responseLines = response.split('\n');
+                    responseLines.forEach(line => {
+                        const responseLine = document.createElement('span');
+                        responseLine.className = 'line';
+                        responseLine.textContent = line;
+                        outputElement.appendChild(responseLine);
+                    });
+                }
+
+                const blankLine = document.createElement('br');
+                outputElement.appendChild(blankLine);
+
+                inputElement.value = '';
+                window.scrollTo(0, document.body.scrollHeight);
+            }
+        });
+
+        // Update prompt after a cd command
+        function updatePrompt(dir) {
+            currentDir = dir;
+            promptElement.textContent = `${currentDir}&gt;`;
+        }
+
+        // Override the cd command in commands.js to update the prompt
+        commands.cd = (args) => {
+            if (args.length === 0) return "The directory name is invalid.";
+            const newDir = args.join(' ');
+            updatePrompt(newDir);
+            return `Changed directory to ${newDir}`;
+        };
+    </script>
+</body>
+</html>

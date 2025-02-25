@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Log Viewer</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f2f5;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+        }
+        .header {
+            background: #007bff;
+            color: #ffffff;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+        .header i {
+            margin-right: 10px;
+        }
+        .main {
+            display: flex;
+            margin-top: 60px; /* Adjust based on header height */
+            height: calc(100vh - 60px); /* Adjust based on header height */
+        }
+        .sidebar {
+            width: 250px;
+            background: #343a40;
+            color: #ffffff;
+            padding: 15px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            border-right: 1px solid #444;
+            position: fixed;
+            height: calc(100vh - 60px); /* Adjust based on header height */
+        }
+        .sidebar h2 {
+            margin-top: 0;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .sidebar button {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            background: #495057;
+            color: #ffffff;
+            border: none;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.3s;
+        }
+        .sidebar button:hover {
+            background: #6c757d;
+        }
+        .sidebar button i {
+            margin-right: 10px;
+        }
+        .content {
+            flex: 1;
+            margin-left: 250px; /* Adjust based on sidebar width */
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        .log-entry {
+            background: #ffffff;
+            border: 1px solid #dddddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        .log-entry span {
+            display: block;
+            font-size: 0.9em;
+            color: #666666;
+        }
+        .log-entry strong {
+            font-size: 1em;
+            color: #333;
+        }
+        .log-entry .details {
+            margin-top: 5px;
+            font-size: 0.85em;
+            color: #999;
+        }
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .search-bar {
+            margin-bottom: 20px;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1em;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        .log-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .filter-chip {
+            background: #007bff;
+            color: #ffffff;
+            border-radius: 5px;
+            padding: 5px 10px;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+        .filter-chip:hover {
+            background: #0056b3;
+        }
+        .filter-chip.active {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <i class="fas fa-laptop-code"></i> System Log Viewer
+        </div>
+        <div class="main">
+            <div class="sidebar">
+                <h2>Sections</h2>
+                <button onclick="generateLog('Application')"><i class="fas fa-cogs"></i> Application Logs</button>
+                <button onclick="generateLog('Security')"><i class="fas fa-shield-alt"></i> Security Logs</button>
+                <button onclick="generateLog('System')"><i class="fas fa-desktop"></i> System Logs</button>
+                <button onclick="generateLog('Hardware')"><i class="fas fa-memory"></i> Hardware Logs</button>
+            </div>
+            <div class="content">
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search logs..." onkeyup="filterLogs()">
+                </div>
+                <div class="log-filters">
+                    <span class="filter-chip" onclick="filterByType('All')">All</span>
+                    <span class="filter-chip" onclick="filterByType('Application')">Application</span>
+                    <span class="filter-chip" onclick="filterByType('Security')">Security</span>
+                    <span class="filter-chip" onclick="filterByType('System')">System</span>
+                    <span class="filter-chip" onclick="filterByType('Hardware')">Hardware</span>
+                </div>
+                <div class="log-container" id="logContainer">
+                    <p>Select a section to view logs.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let logs = [];
+        let currentFilter = 'All';
+
+        function generateLog(type) {
+            const logContainer = document.getElementById('logContainer');
+            logContainer.innerHTML = '';
+            
+            logs = [];
+            for (let i = 0; i < 100; i++) {
+                logs.push(generateRandomLogEntry(type));
+            }
+
+            displayLogs();
+        }
+
+        function displayLogs() {
+            const logContainer = document.getElementById('logContainer');
+            logContainer.innerHTML = '';
+
+            const filteredLogs = logs.filter(log => 
+                currentFilter === 'All' || log.type === currentFilter
+            );
+
+            if (filteredLogs.length === 0) {
+                logContainer.innerHTML = '<p>No logs to display.</p>';
+                return;
+            }
+
+            filteredLogs.forEach(entry => {
+                const logDiv = document.createElement('div');
+                logDiv.className = 'log-entry';
+                logDiv.innerHTML = `
+                    <div class="log-header">
+                        <strong>${entry.timestamp}</strong>
+                        <span>[${entry.type}]</span>
+                    </div>
+                    ${entry.message}
+                    <div class="details">${entry.details}</div>
+                `;
+                logContainer.appendChild(logDiv);
+            });
+        }
+
+        function generateRandomLogEntry(type) {
+            const timestamps = [
+                new Date().toISOString(),
+                new Date(Date.now() - 1000 * 60 * 60).toISOString(),
+                new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+                new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
+                new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString()
+            ];
+            const messages = {
+                'Application': [
+                    'App started successfully.',
+                    'App encountered an unexpected error.',
+                    'App configuration updated.',
+                    'App user login failed.',
+                    'App data synchronization completed.',
+                    'App update available.',
+                    'App connection to server lost.',
+                    'App restarted after crash.',
+                    'App permission changed.',
+                    'App cache cleared.',
+                    'App user logged out.',
+                    'App plugin installed.',
+                    'App data backup completed.',
+                    'App encountered a database error.',
+                    'App network issue detected.',
+                    'App service temporarily unavailable.',
+                    'App settings reset to default.',
+                    'App scheduled task executed.',
+                    'App security patch applied.',
+                    'App license expired.',
+                    'App user role updated.',
+                    'App session timeout.',
+                    'App data import finished.',
+                    'App service restarted.',
+                    'App interface updated.',
+                    'App error log cleared.',
+                    'App configuration reloaded.',
+                    'App maintenance mode activated.',
+                    'App resource usage spike.',
+                    'App temporary files cleaned.',
+                    'App update downloaded.',
+                    'App crash report generated.',
+                    'App database migration completed.',
+                    'App data encryption enabled.',
+                    'App server response time high.',
+                    'App user authentication error.',
+                    'App API rate limit exceeded.',
+                    'App module failed to load.',
+                    'App integration test passed.',
+                    'App critical bug reported.',
+                    'App feature flag toggled.',
+                    'App user feedback received.',
+                    'App plugin updated.',
+                    'App data export initiated.',
+                    'App server restarted.',
+                    'App license renewal required.',
+                    'App server overload detected.',
+                    'App high CPU usage warning.',
+                    'App API endpoint deprecated.',
+                    'App deprecated feature removed.',
+                    'App version rollback initiated.',
+                    'App security audit passed.'
+                ],
+                'Security': [
+                    'User login attempt from unknown IP.',
+                    'Security update applied.',
+                    'Suspicious activity detected.',
+                    'Unauthorized access attempt blocked.',
+                    'Firewall configuration changed.',
+                    'Malware scan completed.',
+                    'Security policy updated.',
+                    'Intrusion detection triggered.',
+                    'User account locked due to failed logins.',
+                    'Security breach detected.',
+                    'VPN connection established.',
+                    'Encryption key rotated.',
+                    'Security patch applied.',
+                    'Unauthorized device detected.',
+                    'Security audit completed.',
+                    'Phishing attempt blocked.',
+                    'Security group permission modified.',
+                    'Two-factor authentication enabled.',
+                    'Network intrusion attempt logged.',
+                    'Security vulnerability found.',
+                    'User session expired.',
+                    'Antivirus definitions updated.',
+                    'Security alert resolved.',
+                    'Access control list modified.',
+                    'Threat intelligence feed updated.',
+                    'Security log reviewed.',
+                    'DDoS attack mitigated.',
+                    'Security policy enforced.',
+                    'Data leak prevention triggered.',
+                    'Critical security issue reported.',
+                    'Security configuration backup created.',
+                    'Firewall rule updated.',
+                    'User account security settings changed.',
+                    'Malicious file quarantined.',
+                    'Security incident response initiated.',
+                    'Security certificate renewed.',
+                    'Intrusion prevention system activated.',
+                    'Security event correlation completed.',
+                    'Suspicious email flagged.',
+                    'Security vulnerability patched.',
+                    'Security compliance report generated.',
+                    'Access request approved.',
+                    'Security update pending.',
+                    'Security patch failed to apply.',
+                    'User access permissions reviewed.',
+                    'Critical vulnerability patched.',
+                    'Unauthorized application detected.',
+                    'Suspicious activity logged.'
+                ],
+                'System': [
+                    'System boot completed.',
+                    'Service X restarted.',
+                    'System update installed.',
+                    'System memory usage high.',
+                    'System disk space critical.',
+                    'System performance optimized.',
+                    'System scheduled task executed.',
+                    'System resource usage reported.',
+                    'System log rotation performed.',
+                    'System backup completed.',
+                    'System error detected.',
+                    'System temperature monitored.',
+                    'System network status changed.',
+                    'System service failure logged.',
+                    'System user session started.',
+                    'System configuration updated.',
+                    'System security scan performed.',
+                    'System disk cleanup completed.',
+                    'System load average high.',
+                    'System power state changed.',
+                    'System patch applied.',
+                    'System process terminated.',
+                    'System reboot scheduled.',
+                    'System hardware diagnostics run.',
+                    'System firmware updated.',
+                    'System service stopped.',
+                    'System uptime recorded.',
+                    'System configuration file modified.',
+                    'System resource allocation adjusted.',
+                    'System event logged.',
+                    'System time synchronization successful.',
+                    'System error report generated.',
+                    'System connectivity issue detected.',
+                    'System database maintenance completed.',
+                    'System access control modified.',
+                    'System update downloaded.',
+                    'System maintenance mode activated.',
+                    'System high availability check passed.',
+                    'System capacity planning performed.',
+                    'System diagnostic report generated.',
+                    'System software upgrade completed.',
+                    'System performance issue detected.',
+                    'System hardware issue logged.',
+                    'System service health check completed.',
+                    'System backup verification passed.',
+                    'System patch deployment successful.',
+                    'System data integrity check performed.',
+                    'System security vulnerability assessed.'
+                ],
+                'Hardware': [
+                    'CPU temperature normal.',
+                    'Hard drive failure imminent.',
+                    'Memory module removed.',
+                    'Network card driver updated.',
+                    'Power supply issues detected.',
+                    'GPU usage high.',
+                    'Battery status low.',
+                    'Cooling fan speed increased.',
+                    'Peripheral device connected.',
+                    'Hardware diagnostics completed.',
+                    'Motherboard firmware updated.',
+                    'Temperature sensor malfunction.',
+                    'Hardware component replaced.',
+                    'Device connection lost.',
+                    'Hardware upgrade successful.',
+                    'Power outage detected.',
+                    'Network interface status changed.',
+                    'Hardware failure report generated.',
+                    'Device calibration completed.',
+                    'Fan error detected.',
+                    'Disk read error logged.',
+                    'System hardware idle.',
+                    'Hardware compatibility check passed.',
+                    'Device driver issue resolved.',
+                    'Hardware temperature anomaly detected.',
+                    'Power supply unit tested.',
+                    'Memory usage monitored.',
+                    'CPU usage spike detected.',
+                    'Device overheating warning.',
+                    'Hardware inventory updated.',
+                    'System hardware configuration changed.',
+                    'Storage capacity expanded.',
+                    'Hardware fault isolated.',
+                    'Peripheral malfunction reported.',
+                    'Device performance degraded.',
+                    'Power supply test completed.',
+                    'Cooling system check performed.',
+                    'Hardware failure recovery initiated.',
+                    'System hardware log cleared.',
+                    'Hardware watchdog timer triggered.',
+                    'Power management settings updated.',
+                    'Device firmware upgrade available.',
+                    'Device temperature stabilized.',
+                    'Hardware performance optimized.',
+                    'Cooling fan replaced.',
+                    'Hardware component tested.',
+                    'Device connectivity restored.',
+                    'System diagnostics passed.'
+                ]
+            };
+
+            const randomTimestamp = timestamps[Math.floor(Math.random() * timestamps.length)];
+            const randomMessage = messages[type][Math.floor(Math.random() * messages[type].length)];
+            
+            return {
+                timestamp: randomTimestamp,
+                type: type,
+                message: randomMessage,
+                details: `Details for ${type} log entry #${Math.floor(Math.random() * 1000)}`
+            };
+        }
+
+        function filterLogs() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const logContainer = document.getElementById('logContainer');
+            
+            Array.from(logContainer.getElementsByClassName('log-entry')).forEach(entry => {
+                const textContent = entry.textContent.toLowerCase();
+                if (textContent.includes(searchInput)) {
+                    entry.style.display = '';
+                } else {
+                    entry.style.display = 'none';
+                }
+            });
+        }
+
+        function filterByType(type) {
+            const filterChips = document.querySelectorAll('.filter-chip');
+            filterChips.forEach(chip => chip.classList.remove('active'));
+
+            currentFilter = type;
+            if (type === 'All') {
+                currentFilter = 'All';
+                document.querySelectorAll('.filter-chip').forEach(chip => chip.classList.remove('active'));
+            } else {
+                document.querySelector(`.filter-chip[onclick="filterByType('${type}')"]`).classList.add('active');
+            }
+            displayLogs();
+        }
+    </script>
+</body>
+</html>

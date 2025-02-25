@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terminal</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: #000; /* black background */
+        font-family: Consolas, monospace;
+        font-size: 15px; /* Windows CMD font size */
+        color: #FFD700; /* gold/yellow text color for commands */
+        overflow: hidden; /* prevent body overflow */
+    }
+    #editable-content {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow-y: auto; /* enable vertical scrolling */
+        white-space: pre-wrap;
+        outline: none;
+        border: none;
+        resize: none;
+        background: transparent;
+    }
+    .command {
+        color: #3208bf; /* gold/yellow text color for commands */
+    }
+    .output {
+        color: #FF0000; /* green text color for command outputs */
+    }
+    .error {
+        color: #00FF00; /* red text color for errors */
+    }
+</style>
+</head>
+<body>
+    <div id="editable-content" contenteditable="true">>A:\\red.1v\user\vende></div>
+
+<script>
+    const commands = {
+        help: "help\nclear\ngreet\nabout\nclear\ndate\ncd\nlist\nsysinfo\ncalc\nwhoami\necho\nshutdown\nrestart\nsetcolor\nnetwork\ntasklist\nkill\nnotes\nlock\nweather\nupdate\ntheme\ndisk\nlogout\ntime\nxxe install",
+        greet: "Welcome to your EsteeOS terminal!",
+        about: "This is a custom terminal for a EsteeOS. Version 2.5.",
+        clear: "clear",
+        date: `Current date and time: ${new Date()}`,
+        cd: "Changed directory.",
+        list: "Files and directories: [file1.txt, file2.txt, folder1]",
+        sysinfo: "System Info: CPU 3.4GHz, RAM 16GB, OS CustomOS v1.0.",
+        calc: "Usage: calc [operation]. Example: calc 2+2",
+        whoami: "Current user: vende",
+        echo: "Usage: echo [text]",
+        shutdown: "System shutting down... (simulation)",
+        restart: "System restarting... (simulation)",
+        setcolor: "Usage: setcolor [color]. Example: setcolor green",
+        network: "Network status: Connected",
+        tasklist: "Running tasks: [task1, task2, task3]",
+        kill: "Usage: kill [task]. Example: kill task1",
+        notes: "Opening notes application... (simulation)",
+        lock: "Terminal locked. Type your password to unlock. (simulation)",
+        weather: "Weather: Sunny, 25°C.",
+        update: "Checking for updates... (simulation)",
+        theme: "Usage: theme [name]. Example: theme dark",
+        disk: "Disk Usage: 500GB/1TB",
+        logout: "Logging out... (simulation)",
+        time: `Current time: ${new Date().toLocaleTimeString()}`
+    };
+
+    function scrollToBottom() {
+        const contentDiv = document.getElementById('editable-content');
+        contentDiv.scrollTop = contentDiv.scrollHeight;
+    }
+
+    async function executeCommand(input) {
+        const contentDiv = document.getElementById('editable-content');
+        let output;
+        if (input.startsWith("calc")) {
+            try {
+                const calcResult = eval(input.split("calc ")[1]);
+                output = `<div class="output">Result: ${calcResult}</div>`;
+            } catch {
+                output = `<div class="error">Error: Invalid calculation.</div>`;
+            }
+        } else if (input.startsWith("echo")) {
+            output = `<div class="output">${input.split("echo ")[1]}</div>`;
+        } else if (input.startsWith("xxe install")) {
+            const installName = input.split("xxe install ")[1];
+            if (installName) {
+                output = `<div class="output">Installing "${installName}"...</div>`;
+                contentDiv.innerHTML += `\n${output}`;
+                scrollToBottom();
+                await simulateInstall(installName);
+                return;
+            } else {
+                output = `<div class="error">Error: No package name provided.</div>`;
+            }
+        } else if (input.startsWith("update")) {
+            output = `<div class="output">[------] Checking for updates...</div>`;
+            contentDiv.innerHTML += `\n${output}`;
+            scrollToBottom();
+            await simulateUpdate();
+            return;
+        } else if (commands[input]) {
+            output = `<div class="output">${commands[input]}</div>`;
+        } else {
+            output = `<div class="error">Error: Command "${input}" not recognized.</div>`;
+        }
+
+        if (commands[input] === "clear") {
+            contentDiv.innerHTML = `<div class="command">>A:\\g.1v\\user\\estee></div>`;
+        } else {
+            contentDiv.innerHTML += `\n${output}\n<div class="command">>A:\\g.1v\\user\\estee></div>`;
+        }
+
+        // Ensure cursor is at the end of the prompt
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(contentDiv);
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        contentDiv.focus();
+
+        scrollToBottom();
+    }
+
+    async function simulateInstall(installName) {
+        const contentDiv = document.getElementById('editable-content');
+        const totalLength = 59;
+        let loadingBar = `[${"-".repeat(totalLength)}]`;
+        contentDiv.innerHTML += `<div class="output">${loadingBar}</div>`;
+        scrollToBottom();
+
+        for (let i = 1; i <= totalLength; i++) {
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            loadingBar = `[${"#".repeat(i)}${"-".repeat(totalLength - i)}]`;
+            contentDiv.innerHTML = contentDiv.innerHTML.replace(/(\[.*\])/, loadingBar);
+            scrollToBottom();
+        }
+
+        contentDiv.innerHTML += `\n<div class="output">${installName} installed successfully!</div>`;
+        scrollToBottom();
+    }
+
+    async function simulateUpdate() {
+        const contentDiv = document.getElementById('editable-content');
+        const totalLength = 59;
+        let loadingBar = `[${"-".repeat(totalLength)}]`;
+        contentDiv.innerHTML += `<div class="output">${loadingBar} Checking for updates...</div>`;
+        scrollToBottom();
+
+        for (let i = 1; i <= totalLength; i++) {
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+            loadingBar = `[${"#".repeat(i)}${"-".repeat(totalLength - i)}]`;
+            contentDiv.innerHTML = contentDiv.innerHTML.replace(/(\[.*\])/, loadingBar);
+            scrollToBottom();
+        }
+
+        const randomUpdate = Math.random();
+        if (randomUpdate < 0.2) {
+            contentDiv.innerHTML += `\n<div class="output">Update found! Update to the latest version? Y/n</div>`;
+            contentDiv.innerHTML += `\n<div class="command">>A:\\g.1v\\user\\estee> </div>`;
+            scrollToBottom();
+            return;  // Wait for user input
+        } else {
+            contentDiv.innerHTML += `\n<div class="output">No updates found.</div>`;
+            contentDiv.innerHTML += `\n<div class="command">>A:\\g.1v\\user\\estee></div>`;
+            scrollToBottom();
+            return;
+        }
+    }
+
+    // Handle user input for commands
+    document.getElementById('editable-content').addEventListener('keydown', function(event) {
+        const contentDiv = document.getElementById('editable-content');
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            const lines = contentDiv.textContent.split('\n');
+            const lastLine = lines[lines.length - 1];
+            const commandInput = lastLine.replace(/^>A:\\g\.1v\\user\\estee>/, "").trim();
+            if (commandInput === "n") {
+                contentDiv.innerHTML += `\n<div class="output">Update canceled.</div>`;
+                contentDiv.innerHTML += `\n<div class="command">>A:\\g.1v\\user\\estee></div>`;
+                scrollToBottom();
+            } else if (commandInput === "-y") {
+                contentDiv.innerHTML += `<div class="output">[--------------------] Updating...</div>`;
+                scrollToBottom();
+                setTimeout(() => {
+                    contentDiv.innerHTML += `\n<div class="output">Updated successfully!</div>`;
+                    contentDiv.innerHTML += `\n<div class="command">>A:\\g.1v\\user\\estee></div>`;
+                    scrollToBottom();
+                }, 4000);
+            } else {
+                executeCommand(commandInput);
+            }
+        } else if (event.ctrlKey && event.key === 'c') {
+            // Simulate Ctrl+C to cancel the command
+            contentDiv.innerHTML += `\n<div class="command">>A:\\g.1v\\user\\estee></div>`;
+            scrollToBottom();
+        }
+    });
+</script>
+</body>
+</html>

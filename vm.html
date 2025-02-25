@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>VMware</title>
+
+    <style>
+
+        body {
+
+            font-family: Arial, sans-serif;
+
+            background-color: #1e1e1e;
+
+            color: #ccc;
+
+            margin: 0;
+
+            padding: 0;
+
+            transition: background-color 0.3s, color 0.3s;
+
+        }
+
+        .container {
+
+            display: flex;
+
+            height: 100vh;
+
+            overflow: hidden;
+
+        }
+
+        .sidebar {
+
+            width: 300px;
+
+            background-color: #2b2b2b;
+
+            color: #fff;
+
+            padding: 20px;
+
+            box-shadow: 3px 0 10px rgba(0, 0, 0, 0.3);
+
+            display: flex;
+
+            flex-direction: column;
+
+        }
+
+        .sidebar h2 {
+
+            margin-top: 0;
+
+            font-size: 1.8em;
+
+            color: #e0e0e0;
+
+        }
+
+        .sidebar ul {
+
+            list-style: none;
+
+            padding: 0;
+
+            margin: 0;
+
+        }
+
+        .sidebar ul li {
+
+            margin: 15px 0;
+
+        }
+
+        .sidebar ul li a {
+
+            color: #c5c5c5;
+
+            text-decoration: none;
+
+            font-size: 1.1em;
+
+            display: block;
+
+            padding: 10px;
+
+            border-radius: 5px;
+
+            transition: background 0.3s;
+
+        }
+
+        .sidebar ul li a:hover {
+
+            background-color: #404040;
+
+        }
+
+        .main-content {
+
+            flex: 1;
+
+            padding: 20px;
+
+            overflow-y: auto;
+
+        }
+
+        .vm-list, .status-panel, .settings-panel, .new-vm-panel {
+
+            background-color: #2b2b2b;
+
+            border-radius: 10px;
+
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+
+            padding: 20px;
+
+            margin-bottom: 20px;
+
+        }
+
+        .vm-list h3, .status-panel h3, .settings-panel h3, .new-vm-panel h3 {
+
+            margin-top: 0;
+
+            color: #e0e0e0;
+
+            border-bottom: 2px solid #444;
+
+            padding-bottom: 10px;
+
+        }
+
+        .vm-item {
+
+            display: flex;
+
+            align-items: center;
+
+            padding: 10px;
+
+            border-bottom: 1px solid #444;
+
+            transition: background 0.3s;
+
+        }
+
+        .vm-item:hover {
+
+            background-color: #3a3a3a;
+
+        }
+
+        .vm-item img {
+
+            width: 40px;
+
+            height: 40px;
+
+            margin-right: 15px;
+
+        }
+
+        .vm-item span {
+
+            flex: 1;
+
+            color: #ccc;
+
+        }
+
+        .vm-item button {
+
+            background-color: #007bff;
+
+            color: #fff;
+
+            border: none;
+
+            border-radius: 5px;
+
+            padding: 8px 15px;
+
+            cursor: pointer;
+
+            font-size: 14px;
+
+            transition: background 0.3s, transform 0.2s;
+
+            margin-right: 10px;
+
+        }
+
+        .vm-item button:last-child {
+
+            margin-right: 0;
+
+        }
+
+        .vm-item button:hover {
+
+            background-color: #0056b3;
+
+        }
+
+        .vm-item button:active {
+
+            transform: scale(0.98);
+
+        }
+
+        .button {
+
+            background-color: #007bff;
+
+            color: #fff;
+
+            border: none;
+
+            border-radius: 5px;
+
+            padding: 10px 20px;
+
+            cursor: pointer;
+
+            font-size: 16px;
+
+            margin-right: 10px;
+
+            transition: background 0.3s, transform 0.2s;
+
+        }
+
+        .button:hover {
+
+            background-color: #0056b3;
+
+        }
+
+        .button:active {
+
+            transform: scale(0.98);
+
+        }
+
+        .status-panel p, .settings-panel p, .new-vm-panel p {
+
+            margin: 5px 0;
+
+            color: #e0e0e0;
+
+        }
+
+        .toggle-switch {
+
+            display: flex;
+
+            align-items: center;
+
+        }
+
+        .toggle-switch label {
+
+            margin-left: 10px;
+
+            font-size: 1em;
+
+            color: #ccc;
+
+        }
+
+        .switch {
+
+            position: relative;
+
+            display: inline-block;
+
+            width: 34px;
+
+            height: 20px;
+
+        }
+
+        .switch input {
+
+            opacity: 0;
+
+            width: 0;
+
+            height: 0;
+
+        }
+
+        .slider {
+
+            position: absolute;
+
+            cursor: pointer;
+
+            top: 0;
+
+            left: 0;
+
+            right: 0;
+
+            bottom: 0;
+
+            background-color: #ccc;
+
+            transition: .4s;
+
+            border-radius: 10px;
+
+        }
+
+        .slider:before {
+
+            position: absolute;
+
+            content: "";
+
+            height: 12px;
+
+            width: 12px;
+
+            border-radius: 50%;
+
+            left: 4px;
+
+            bottom: 4px;
+
+            background-color: white;
+
+            transition: .4s;
+
+        }
+
+        input:checked + .slider {
+
+            background-color: #007bff;
+
+        }
+
+        input:checked + .slider:before {
+
+            transform: translateX(14px);
+
+        }
+
+        .new-vm-form input, .new-vm-form select {
+
+            display: block;
+
+            width: calc(100% - 22px);
+
+            padding: 10px;
+
+            margin-bottom: 10px;
+
+            border: 1px solid #444;
+
+            border-radius: 5px;
+
+            background-color: #333;
+
+            color: #fff;
+
+        }
+
+        .new-vm-form label {
+
+            margin-bottom: 5px;
+
+            display: block;
+
+            color: #e0e0e0;
+
+        }
+
+        .new-vm-form button {
+
+            background-color: #28a745;
+
+            margin-top: 10px;
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="sidebar">
+
+            <h2>VMware Dashboard</h2>
+
+            <ul>
+
+                <li><a href="#" onclick="showContent('overview')">Overview</a></li>
+
+                <li><a href="#" onclick="showContent('vms')">Virtual Machines</a></li>
+
+                <li><a href="#" onclick="showContent('settings')">Settings</a></li>
+
+                <li><a href="#" onclick="showContent('help')">Help</a></li>
+
+            </ul>
+
+        </div>
+
+        <div class="main-content">
+
+            <div id="overview" class="content">
+
+                <h1>Welcome to the VMware Dashboard</h1>
+
+                <p>Select an option from the sidebar to get started.</p>
+
+            </div>
+
+            <div id="vms" class="content" style="display: none;">
+
+                <div class="vm-list">
+
+                    <h3>Virtual Machines</h3>
+
+                    <button class="button" onclick="showNewVMForm()">+ Create New VM</button>
+
+                    <div id="new-vm-panel" class="new-vm-panel" style="display: none;">
+
+                        <h3>Create New Virtual Machine</h3>
+
+                        <form class="new-vm-form" onsubmit="createVM(event)">
+
+                            <label for="vmName">VM Name:</label>
+
+                            <input type="text" id="vmName" required>
+
+                            <label for="vmOS">Operating System:</label>
+
+                            <select id="vmOS">
+
+                                <!-- Extensive list of OS options -->
+
+                                <option value="Windows Server 2022">Windows Server 2022</option>
+
+                                <option value="Windows Server 2019">Windows Server 2019</option>
+
+                                <option value="Windows Server 2016">Windows Server 2016</option>
+
+                                <option value="Windows 11">Windows 11</option>
+
+                                <option value="Windows 10">Windows 10</option>
+
+                                <option value="Windows 8.1">Windows 8.1</option>
+
+                                <option value="Windows 8">Windows 8</option>
+
+                                <option value="Windows 7">Windows 7</option>
+
+                                <option value="Windows XP">Windows XP</option>
+
+                                <option value="Ubuntu 24.04">Ubuntu 24.04</option>
+
+                                <option value="Ubuntu 22.04">Ubuntu 22.04</option>
+
+                                <option value="Ubuntu 20.04">Ubuntu 20.04</option>
+
+                                <option value="Ubuntu 18.04">Ubuntu 18.04</option>
+
+                                <option value="Debian 12">Debian 12</option>
+
+                                <option value="Debian 11">Debian 11</option>
+
+                                <option value="Debian 10">Debian 10</option>
+
+                                <option value="Fedora 39">Fedora 39</option>
+
+                                <option value="Fedora 38">Fedora 38</option>
+
+                                <option value="Fedora 37">Fedora 37</option>
+
+                                <option value="CentOS 9">CentOS 9</option>
+
+                                <option value="CentOS 8">CentOS 8</option>
+
+                                <option value="CentOS 7">CentOS 7</option>
+
+                                <option value="RHEL 9">RHEL 9</option>
+
+                                <option value="RHEL 8">RHEL 8</option>
+
+                                <option value="RHEL 7">RHEL 7</option>
+
+                                <option value="SUSE Linux Enterprise Server 15">SUSE Linux Enterprise Server 15</option>
+
+                                <option value="SUSE Linux Enterprise Server 12">SUSE Linux Enterprise Server 12</option>
+
+                                <option value="OpenSUSE Leap 15">OpenSUSE Leap 15</option>
+
+                                <option value="OpenSUSE Leap 42">OpenSUSE Leap 42</option>
+
+                                <option value="Arch Linux">Arch Linux</option>
+
+                                <option value="Manjaro">Manjaro</option>
+
+                                <option value="Alpine Linux">Alpine Linux</option>
+
+                                <option value="Oracle Linux 9">Oracle Linux 9</option>
+
+                                <option value="Oracle Linux 8">Oracle Linux 8</option>
+
+                                <option value="Kali Linux">Kali Linux</option>
+
+                                <option value="Parrot OS">Parrot OS</option>
+
+                                <option value="BackBox">BackBox</option>
+
+                                <option value="Slackware 15">Slackware 15</option>
+
+                                <option value="Slackware 14">Slackware 14</option>
+
+                                <option value="Gentoo">Gentoo</option>
+
+                                <option value="Puppy Linux">Puppy Linux</option>
+
+                                <option value="Tiny Core Linux">Tiny Core Linux</option>
+
+                                <option value="Clear Linux">Clear Linux</option>
+
+                                <option value="Deepin">Deepin</option>
+
+                                <option value="Zorin OS">Zorin OS</option>
+
+                                <option value="elementary OS">elementary OS</option>
+
+                                <option value="MX Linux">MX Linux</option>
+
+                                <option value="Solus">Solus</option>
+
+                                <option value="EndeavourOS">EndeavourOS</option>
+
+                                <option value="Nobara">Nobara</option>
+
+                                <option value="OpenMandriva">OpenMandriva</option>
+
+                                <option value="KaOS">KaOS</option>
+
+                                <option value="PCLinuxOS">PCLinuxOS</option>
+
+                                <option value="Raspberry Pi OS">Raspberry Pi OS</option>
+
+                                <option value="FreeBSD 14">FreeBSD 14</option>
+
+                                <option value="FreeBSD 13">FreeBSD 13</option>
+
+                                <option value="OpenBSD">OpenBSD</option>
+
+                                <option value="NetBSD">NetBSD</option>
+
+                                <option value="ReactOS">ReactOS</option>
+
+                                <option value="Haiku">Haiku</option>
+
+                                <option value="OpenIndiana">OpenIndiana</option>
+
+                                <option value="Solaris 11">Solaris 11</option>
+
+                                <option value="WitherOS">WitherOS</option>
+
+                                <option value="WitherOS-EDU">WitherOS-EDU</option>
+
+                                <option value="WitherOS 6.11">WitherOS 6.11</option>
+
+                                <option value="VendaOS Linux">VendaOS Linux</option>
+
+                                <option value="MyaOS">MyaOS</option>
+
+                                <!-- Additional 100+ OS options -->
+
+                                <option value="AIX">AIX</option>
+
+                                <option value="AmigaOS">AmigaOS</option>
+
+                                <option value="BeOS">BeOS</option>
+
+                                <option value="Chrome OS">Chrome OS</option>
+
+                                <option value="Classic Mac OS">Classic Mac OS</option>
+
+                                <option value="DragonFly BSD">DragonFly BSD</option>
+
+                                <option value="Fuchsia">Fuchsia</option>
+
+                                <option value="GoboLinux">GoboLinux</option>
+
+                                <option value="GNU/Linux">GNU/Linux</option>
+
+                                <option value="Irix">Irix</option>
+
+                                <option value="Joli OS">Joli OS</option>
+
+                                <option value="Lindows">Lindows</option>
+
+                                <option value="MorphOS">MorphOS</option>
+
+                                <option value="MPE/iX">MPE/iX</option>
+
+                                <option value="QNX">QNX</option>
+
+                                <option value="RISC OS">RISC OS</option>
+
+                                <option value="Syllable">Syllable</option>
+
+                                <option value="Temple OS">Temple OS</option>
+
+                                <option value="Tails">Tails</option>
+
+                                <option value="Trisquel">Trisquel</option>
+
+                                <option value="Vine Linux">Vine Linux</option>
+
+                                <option value="Zorin OS Lite">Zorin OS Lite</option>
+
+                                <option value="Ubuntu Studio">Ubuntu Studio</option>
+
+                                <option value="Xubuntu">Xubuntu</option>
+
+                                <option value="Lubuntu">Lubuntu</option>
+
+                                <option value="Kubuntu">Kubuntu</option>
+
+                                <option value="Linux Mint">Linux Mint</option>
+
+                                <option value="Manjaro KDE">Manjaro KDE</option>
+
+                                <option value="Solus Plasma">Solus Plasma</option>
+
+                                <option value="Raspberry Pi OS Lite">Raspberry Pi OS Lite</option>
+
+                                <option value="NixOS">NixOS</option>
+
+                                <option value="Pop!_OS">Pop!_OS</option>
+
+                                <option value="Tails">Tails</option>
+
+                                <option value="SUSE Linux Enterprise Desktop 15">SUSE Linux Enterprise Desktop 15</option>
+
+                                <option value="ArchBang">ArchBang</option>
+
+                                <option value="BunsenLabs Linux">BunsenLabs Linux</option>
+
+                                <option value="Void Linux">Void Linux</option>
+
+                                <option value="Parabola GNU/Linux-libre">Parabola GNU/Linux-libre</option>
+
+                                <option value="Slax">Slax</option>
+
+                                <option value="Puppy Linux BionicPup">Puppy Linux BionicPup</option>
+
+                                <option value="Zorin OS Core">Zorin OS Core</option>
+
+                                <option value="PCLinuxOS KDE">PCLinuxOS KDE</option>
+
+                                <option value="Mageia">Mageia</option>
+
+                                <option value="Sabayon Linux">Sabayon Linux</option>
+
+                                <option value="ALT Linux">ALT Linux</option>
+
+                                <option value="Netrunner">Netrunner</option>
+
+                                <option value="ClearOS">ClearOS</option>
+
+                                <option value="ArchLabs">ArchLabs</option>
+
+                                <option value="macOS">macOS</option>
+
+                                <option value="Android">Android</option>
+
+                                <option value="Bodhi Linux">Bodhi Linux</option>
+
+                                <option value="Peppermint OS">Peppermint OS</option>
+
+                                <option value="SuperX">SuperX</option>
+
+                                <option value="Knoppix">Knoppix</option>
+
+                                <option value="Edubuntu">Edubuntu</option>
+
+                                <option value="Ubuntu Budgie">Ubuntu Budgie</option>
+
+                                <option value="Ubuntu MATE">Ubuntu MATE</option>
+
+                                <option value="Linux Lite">Linux Lite</option>
+
+                                <option value="Kali Linux Light">Kali Linux Light</option>
+
+                                <option value="SystemRescue">SystemRescue</option>
+
+                                <option value="Elementary OS Freya">Elementary OS Freya</option>
+
+                                <option value="Qubes OS">Qubes OS</option>
+
+                                <option value="Deepin Desktop">Deepin Desktop</option>
+
+                                <option value="Gentoo Minimal">Gentoo Minimal</option>
+
+                                <option value="BlackArch">BlackArch</option>
+
+                                <option value="chromeOS">chromeOS</option>
+
+                                <option value="Clover">Clover</option>
+
+                                <option value="Xandros">Xandros</option>
+
+                                <option value="Linspire">Linspire</option>
+
+                                <option value="Tails">Tails</option>
+
+                                <option value="OpenSUSE Tumbleweed">OpenSUSE Tumbleweed</option>
+
+                                <option value="Lakka">Lakka</option>
+
+                                <option value="RancherOS">RancherOS</option>
+
+                                <option value="LanetOS">LanetOS</option>
+
+                                <option value="Chromium OS">Chromium OS</option>
+
+                                <option value="Kali Linux Rolling">Kali Linux Rolling</option>
+
+                                <option value="Proxmox VE">Proxmox VE</option>
+
+                                <option value="Raspberry Pi OS (previously Raspbian)">Raspberry Pi OS (previously Raspbian)</option>
+
+                                <option value="BunsenLabs">BunsenLabs</option>
+
+                                <option value="Tails">Tails</option>
+
+                                <option value="Kali Linux">Kali Linux</option>
+
+                                <option value="NSA-minuteman">NSA-minuteman</option>
+
+                                <option value="SELinux">SELinux</option>
+
+                                <option value="PixieOS">PixieOS</option>
+
+                                <option value="УвядатьOS">УвядатьOS</option>
+                            
+
+                            </select>
+
+                            <label for="vmMemory">Memory (GB):</label>
+
+                            <input type="number" id="vmMemory" min="1" required>
+
+                            <label for="vmStorage">Storage (GB):</label>
+
+                            <input type="number" id="vmStorage" min="10" required>
+
+                            <label for="vmCores">CPU Cores:</label>
+
+                            <input type="number" id="vmCores" min="1" required>
+
+                            <label for="vmNetwork">Network Adapter:</label>
+
+                            <select id="vmNetwork">
+
+                                <option value="NAT">NAT</option>
+
+                                <option value="Bridged">Bridged</option>
+
+                                <option value="Host-only">Host-only</option>
+
+                            </select>
+
+                            <label for="vmGraphics">Graphics Memory (MB):</label>
+
+                            <input type="number" id="vmGraphics" min="0" required>
+
+                            <label for="vmSnapshots">Enable Snapshots:</label>
+
+                            <select id="vmSnapshots">
+
+                                <option value="yes">Yes</option>
+
+                                <option value="no">No</option>
+
+                            </select>
+
+                            <label for="vmBackup">Backup Schedule:</label>
+
+                            <input type="text" id="vmBackup" placeholder="e.g., Daily at 2 AM">
+
+                            <label for="vmDescription">Description:</label>
+
+                            <textarea id="vmDescription" rows="3" placeholder="Add a description for the VM"></textarea>
+
+                            <label for="vmType">VM Type:</label>
+
+                            <select id="vmType">
+
+                                <option value="server">Server</option>
+
+                                <option value="workstation">Workstation</option>
+
+                            </select>
+
+                            <label for="vmTimezone">Timezone:</label>
+
+                            <input type="text" id="vmTimezone" placeholder="e.g., America/New_York">
+
+                            <label for="vmNetworkConfig">Network Configuration:</label>
+
+                            <input type="text" id="vmNetworkConfig" placeholder="e.g., IP: 192.168.1.10, Subnet: 255.255.255.0">
+
+                            <label for="vmSharedFolders">Shared Folders:</label>
+
+                            <input type="text" id="vmSharedFolders" placeholder="e.g., /path/to/folder">
+
+                            <button type="submit" class="button">Create VM</button>
+
+                        </form>
+
+                    </div>
+
+                    <div id="vmListContainer"></div>
+
+                </div>
+
+            </div>
+
+            <div id="settings" class="content" style="display: none;">
+
+                <div class="settings-panel">
+
+                    <h3>Settings</h3>
+
+                    <div class="toggle-switch">
+
+                        <label for="modeSwitch">Toggle Dark/Light Mode:</label>
+
+                        <label class="switch">
+
+                            <input type="checkbox" id="modeSwitch" onchange="toggleMode()">
+
+                            <span class="slider"></span>
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div id="help" class="content" style="display: none;">
+
+                <h1>Help</h1>
+
+                <p>Find support and documentation here.</p>
+
+            </div>
+
+            <div id="status-panel" class="status-panel">
+
+                <h3>Status</h3>
+
+                <p id="statusMessage">Select a VM to see its status.</p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        function showContent(id) {
+
+            const contents = document.querySelectorAll('.content');
+
+            contents.forEach(content => {
+
+                content.style.display = 'none';
+
+            });
+
+            document.getElementById(id).style.display = 'block';
+
+        }
+
+
+        function startVM(vmName) {
+
+            document.getElementById('statusMessage').textContent = vmName + ' is starting...';
+
+        }
+
+
+        function stopVM(vmName) {
+
+            document.getElementById('statusMessage').textContent = vmName + ' is stopping...';
+
+        }
+
+
+        function toggleMode() {
+
+            const body = document.body;
+
+            const isDarkMode = document.getElementById('modeSwitch').checked;
+
+            if (isDarkMode) {
+
+                body.style.backgroundColor = '#1e1e1e';
+
+                body.style.color = '#ccc';
+
+                document.querySelectorAll('.new-vm-form input, .new-vm-form select, .new-vm-form textarea').forEach(el => {
+
+                    el.style.backgroundColor = '#333';
+
+                    el.style.color = '#fff';
+
+                });
+
+            } else {
+
+                body.style.backgroundColor = '#f4f4f4';
+
+                body.style.color = '#333';
+
+                document.querySelectorAll('.new-vm-form input, .new-vm-form select, .new-vm-form textarea').forEach(el => {
+
+                    el.style.backgroundColor = '#fff';
+
+                    el.style.color = '#333';
+
+                });
+
+            }
+
+        }
+
+
+        function showNewVMForm() {
+
+            const formPanel = document.getElementById('new-vm-panel');
+
+            formPanel.style.display = formPanel.style.display === 'none' ? 'block' : 'none';
+
+        }
+
+
+        function createVM(event) {
+
+            event.preventDefault();
+
+            const name = document.getElementById('vmName').value;
+
+            const os = document.getElementById('vmOS').value;
+
+            const memory = document.getElementById('vmMemory').value;
+
+            const storage = document.getElementById('vmStorage').value;
+
+            const cores = document.getElementById('vmCores').value;
+
+            const network = document.getElementById('vmNetwork').value;
+
+            const graphics = document.getElementById('vmGraphics').value;
+
+            const snapshots = document.getElementById('vmSnapshots').value;
+
+            const backup = document.getElementById('vmBackup').value;
+
+            const description = document.getElementById('vmDescription').value;
+
+            const type = document.getElementById('vmType').value;
+
+            const timezone = document.getElementById('vmTimezone').value;
+
+            const networkConfig = document.getElementById('vmNetworkConfig').value;
+
+            const sharedFolders = document.getElementById('vmSharedFolders').value;
+
+            
+
+            // Create VM item
+
+            const vmListContainer = document.getElementById('vmListContainer');
+
+            const vmItem = document.createElement('div');
+
+            vmItem.className = 'vm-item';
+
+            vmItem.innerHTML = `
+
+                <img src="https://img.icons8.com/ios-filled/50/000000/server.png" alt="VM Icon">
+
+                <span>${name} - ${os}</span>
+
+                <button onclick="startVM('${name}')">Start</button>
+
+                <button onclick="stopVM('${name}')">Stop</button>
+
+            `;
+
+            vmListContainer.appendChild(vmItem);
+
+
+            // Hide form
+
+            document.getElementById('new-vm-panel').style.display = 'none';
+
+            document.querySelector('.new-vm-form').reset();
+
+        }
+
+    </script>
+
+</body>
+
+</html>

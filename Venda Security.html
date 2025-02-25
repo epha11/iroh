@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venda Security Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1e1e1e;
+            color: #e1e1e1;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+        .sidebar {
+            width: 250px;
+            background: #333;
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar h1 {
+            color: #fff;
+            margin: 0;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+        }
+        .sidebar img {
+            height: 40px;
+            margin-right: 10px;
+        }
+        .sidebar .nav-item {
+            margin-bottom: 15px;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .sidebar .nav-item:first-of-type {
+            margin-top: 15px;
+        }
+        .sidebar .nav-item:hover, .sidebar .nav-item.active {
+            background: #0078d4;
+            color: #fff;
+        }
+        .content-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .content-area h2 {
+            margin-top: 0;
+        }
+        .status {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+        .status.ok {
+            color: #0f0;
+        }
+        .status.alert {
+            color: #f00;
+        }
+        .button {
+            display: block;
+            padding: 10px 20px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            background-color: #0078d4;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #005a9e;
+        }
+        .loading-bar {
+            width: 100%;
+            background: #444;
+            border-radius: 5px;
+            overflow: hidden;
+            height: 25px;
+            margin: 10px 0;
+            position: relative;
+        }
+        .loading-bar .progress {
+            height: 100%;
+            background: #0078d4;
+            width: 0;
+            transition: width 0.5s;
+        }
+        .loading-bar .status-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            line-height: 25px;
+            color: #fff;
+            font-weight: bold;
+        }
+        .card {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+        }
+        .card h3 {
+            margin-top: 0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #555;
+            border-radius: 5px;
+            background: #333;
+            color: #fff;
+        }
+        #rules-list {
+            margin-top: 10px;
+        }
+        #help-resources a {
+            display: block;
+            margin: 5px 0;
+            text-decoration: none;
+        }
+        canvas {
+            width: 100%;
+            height: 300px;
+        }
+        .logs-container {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #555;
+            padding: 10px;
+            background: #2d2d2d;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h1>
+                <img src="file:///home/chronos/u-a22775739ea1d22e4f15cb41f2d9bac7868e97fd/MyFiles/Downloads/encrypted.png" alt="Venda Security Logo">
+                Venda Security
+            </h1>
+            <div class="nav-item active" onclick="showContent('overview')">Overview</div>
+            <div class="nav-item" onclick="showContent('firewall')">Firewall</div>
+            <div class="nav-item" onclick="showContent('antivirus')">Antivirus</div>
+            <div class="nav-item" onclick="showContent('reports')">Reports</div>
+            <div class="nav-item" onclick="showContent('support')">Support</div>
+            <div class="nav-item" onclick="showContent('activity')">Activity Log</div>
+            <div class="nav-item" onclick="showContent('settings')">Settings</div>
+        </div>
+        <div class="content-area">
+            <!-- Overview -->
+            <div id="overview" class="content active">
+                <div class="card">
+                    <h2>System Overview</h2>
+                    <div class="status ok">System Status: Secure</div>
+                    <button class="button" onclick="refreshOverview()">Refresh Overview</button>
+                    <p>System Overview provides real-time metrics on various system aspects.</p>
+                    <h3>System Metrics</h3>
+                    <canvas id="cpu-chart"></canvas>
+                    <canvas id="memory-chart"></canvas>
+                    <canvas id="disk-chart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Firewall -->
+            <div id="firewall" class="content">
+                <div class="card">
+                    <h2>Firewall Settings</h2>
+                    <div class="status alert">Firewall Status: Disabled</div>
+                    <button class="button" onclick="toggleFirewall()">Enable Firewall</button>
+                    <p>Manage firewall settings to protect your system from unauthorized access.</p>
+                    <h3>Firewall Rules</h3>
+                    <div class="form-group">
+                        <label for="rule-type">Rule Type</label>
+                        <select id="rule-type">
+                            <option value="allow">Allow</option>
+                            <option value="block">Block</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="rule-port">Port Number</label>
+                        <input type="number" id="rule-port" placeholder="Enter port number">
+                    </div>
+                    <div class="form-group">
+                        <label for="rule-ip">IP Address</label>
+                        <input type="text" id="rule-ip" placeholder="Enter IP address">
+                    </div>
+                    <button class="button" onclick="addFirewallRule()">Add Rule</button>
+                    <h3>Current Rules</h3>
+                    <div id="rules-list"></div>
+                </div>
+            </div>
+            
+            <!-- Antivirus -->
+            <div id="antivirus" class="content">
+                <div class="card">
+                    <h2>Antivirus Protection</h2>
+                    <div class="status ok">Antivirus Status: Up to Date</div>
+                    <button class="button" onclick="startScan()">Run Scan</button>
+                    <div id="scan-status" style="display: none;">
+                        <div class="loading-bar">
+                            <div class="progress"></div>
+                            <div class="status-text">Scanning Files: 0% Complete</div>
+                        </div>
+                        <div id="threats" style="color: #0078d4;"></div>
+                    </div>
+                    <h3>Antivirus Settings</h3>
+                    <div class="form-group">
+                        <label for="scan-schedule">Scan Schedule</label>
+                        <select id="scan-schedule">
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="exclusions">Exclusions</label>
+                        <input type="text" id="exclusions" placeholder="Enter files or directories to exclude">
+                    </div>
+                    <button class="button" onclick="saveAntivirusSettings()">Save Settings</button>
+                </div>
+            </div>
+            
+            <!-- Reports -->
+            <div id="reports" class="content">
+                <div class="card">
+                    <h2>System Reports</h2>
+                    <button class="button" onclick="generateReport()">Generate Report</button>
+                    <div id="report-content" style="display: none;">
+                        <h3>Latest Report</h3>
+                        <pre id="report-details">Report details will appear here...</pre>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Support -->
+            <div id="support" class="content">
+                <div class="card">
+                    <h2>Support</h2>
+                    <p>Contact our support team or access help resources for assistance.</p>
+                    <button class="button" onclick="contactSupport()">Contact Support</button>
+                    <h3>Help Resources</h3>
+                    <div id="help-resources">
+                        <a href="#">FAQ</a>
+                        <a href="#">User Guide</a>
+                        <a href="#">Troubleshooting</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Activity Log -->
+            <div id="activity" class="content">
+                <div class="card">
+                    <h2>Activity Log</h2>
+                    <p>Review recent system activities and security events.</p>
+                    <div class="form-group">
+                        <label for="filter-date">Filter by Date</label>
+                        <input type="date" id="filter-date">
+                    </div>
+                    <div class="form-group">
+                        <label for="filter-severity">Filter by Severity</label>
+                        <select id="filter-severity">
+                            <option value="all">All</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <button class="button" onclick="filterActivityLog()">Filter Log</button>
+                    <div class="logs-container">
+                        <pre id="activity-log">Activity log details will appear here...</pre>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Settings -->
+            <div id="settings" class="content">
+                <div class="card">
+                    <h2>Settings</h2>
+                    <p>Customize your security settings according to your preferences.</p>
+                    <h3>General Settings</h3>
+                    <div class="form-group">
+                        <label for="theme">Theme</label>
+                        <select id="theme">
+                            <option value="dark">Dark</option>
+                            <option value="light">Light</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="language">Language</label>
+                        <select id="language">
+                            <option value="en">English</option>
+                            <option value="es">Spanish</option>
+                            <option value="fr">French</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="notifications">Enable Notifications</label>
+                        <input type="checkbox" id="notifications">
+                    </div>
+                    <button class="button" onclick="saveSettings()">Save Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function showContent(contentId) {
+            const items = document.querySelectorAll('.sidebar .nav-item');
+            const contents = document.querySelectorAll('.content');
+
+            items.forEach(item => item.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+
+            document.querySelector(`.sidebar .nav-item[onclick="showContent('${contentId}')"]`).classList.add('active');
+            document.getElementById(contentId).classList.add('active');
+        }
+
+        function refreshOverview() {
+            const ctxCPU = document.getElementById('cpu-chart').getContext('2d');
+            const ctxMemory = document.getElementById('memory-chart').getContext('2d');
+            const ctxDisk = document.getElementById('disk-chart').getContext('2d');
+
+            new Chart(ctxCPU, {
+                type: 'line',
+                data: {
+                    labels: Array.from({ length: 10 }, (_, i) => `T${i + 1}`),
+                    datasets: [{
+                        label: 'CPU Usage (%)',
+                        data: Array.from({ length: 10 }, () => Math.random() * 100),
+                        borderColor: '#0078d4',
+                        backgroundColor: 'rgba(0, 120, 212, 0.2)',
+                        borderWidth: 2
+                    }]
+                },
+                options: { responsive: true }
+            });
+
+            new Chart(ctxMemory, {
+                type: 'bar',
+                data: {
+                    labels: Array.from({ length: 10 }, (_, i) => `T${i + 1}`),
+                    datasets: [{
+                        label: 'Memory Usage (GB)',
+                        data: Array.from({ length: 10 }, () => Math.random() * 16),
+                        backgroundColor: '#0078d4'
+                    }]
+                },
+                options: { responsive: true }
+            });
+
+            new Chart(ctxDisk, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Used Space', 'Free Space'],
+                    datasets: [{
+                        label: 'Disk Space',
+                        data: [Math.random() * 500, 500 - Math.random() * 500],
+                        backgroundColor: ['#0078d4', '#ccc']
+                    }]
+                },
+                options: { responsive: true }
+            });
+        }
+
+        function toggleFirewall() {
+            const statusElement = document.querySelector('#firewall .status');
+            if (statusElement.classList.contains('alert')) {
+                statusElement.textContent = 'Firewall Status: Enabled';
+                statusElement.classList.remove('alert');
+                statusElement.classList.add('ok');
+                document.querySelector('#firewall .button').textContent = 'Disable Firewall';
+            } else {
+                statusElement.textContent = 'Firewall Status: Disabled';
+                statusElement.classList.remove('ok');
+                statusElement.classList.add('alert');
+                document.querySelector('#firewall .button').textContent = 'Enable Firewall';
+            }
+        }
+
+        function addFirewallRule() {
+            const ruleType = document.getElementById('rule-type').value;
+            const port = document.getElementById('rule-port').value;
+            const ip = document.getElementById('rule-ip').value;
+            const rulesList = document.getElementById('rules-list');
+            
+            if (port && ip) {
+                const ruleText = `Type: ${ruleType}, Port: ${port}, IP: ${ip}`;
+                const ruleElement = document.createElement('div');
+                ruleElement.textContent = ruleText;
+                rulesList.appendChild(ruleElement);
+                
+                document.getElementById('rule-port').value = '';
+                document.getElementById('rule-ip').value = '';
+            } else {
+                alert('Please fill in both port and IP address.');
+            }
+        }
+
+        function startScan() {
+            document.getElementById('scan-status').style.display = 'block';
+            const progressBar = document.querySelector('.loading-bar .progress');
+            const statusText = document.querySelector('.loading-bar .status-text');
+            const threatsElement = document.getElementById('threats');
+            
+            let progress = 0;
+            const scanTime = Math.floor(Math.random() * 35000) + 25000;
+            const scanInterval = scanTime / 100;
+            
+            const interval = setInterval(() => {
+                progress += 1;
+                progressBar.style.width = `${progress}%`;
+                statusText.textContent = `Scanning Files: ${progress}% Complete`;
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    statusText.textContent = `Scanning Files: 100% Complete`;
+                    setTimeout(() => {
+                        if (Math.random() < 0.2) {
+                            threatsElement.textContent = `${Math.floor(Math.random() * 10) + 1} threats found!`;
+                            threatsElement.style.color = 'red';
+                        } else {
+                            threatsElement.textContent = `No threats found.`;
+                            threatsElement.style.color = 'green';
+                        }
+                    }, 1000);
+                }
+            }, scanInterval);
+        }
+
+        function saveAntivirusSettings() {
+            const schedule = document.getElementById('scan-schedule').value;
+            const exclusions = document.getElementById('exclusions').value;
+            alert(`Antivirus settings saved!\nSchedule: ${schedule}\nExclusions: ${exclusions}`);
+        }
+
+        function generateReport() {
+            const reportContent = `Report generated on ${new Date().toLocaleString()}\n\nSecurity incidents: None\nSystem Performance: Optimal`;
+            document.getElementById('report-details').textContent = reportContent;
+            document.getElementById('report-content').style.display = 'block';
+        }
+
+        function contactSupport() {
+            alert('Support contact feature is not yet implemented.');
+        }
+
+        function filterActivityLog() {
+            const dateFilter = document.getElementById('filter-date').value;
+            const severityFilter = document.getElementById('filter-severity').value;
+            document.getElementById('activity-log').textContent = `Filtered Activity Log\nDate: ${dateFilter || 'All'}\nSeverity: ${severityFilter || 'All'}`;
+        }
+
+        function saveSettings() {
+            const theme = document.getElementById('theme').value;
+            const language = document.getElementById('language').value;
+            const notifications = document.getElementById('notifications').checked;
+            alert(`Settings saved!\nTheme: ${theme}\nLanguage: ${language}\nNotifications: ${notifications}`);
+        }
+
+        // Initialize Overview page with charts
+        window.onload = function() {
+            refreshOverview();
+        };
+    </script>
+</body>
+</html>

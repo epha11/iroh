@@ -1,0 +1,482 @@
+<html><body><pre><!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>.жэз</title>
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000000;
+            color: #ccc;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: start;
+            position: relative;
+        }
+
+        /* Header */
+        header {
+            padding: 10px 0;
+            text-align: left;
+            border-bottom: 1px solid #555;
+            background-color: #000000;
+        }
+
+        header h1 {
+            color: #fff;
+            font-size: 2em;
+        }
+
+        /* Top-right icon */
+        header .top-right-icon {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+        }
+
+        .top-right-icon img {
+    width: 45px; /* 30px * 1.5 */
+    height: 30px; /* Keep height the same */
+}
+
+
+
+        /* Navigation */
+        nav {
+            background-color: #1a1a1a;
+            padding: 10px 0;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            padding-left: 5px;
+        }
+
+        nav ul li {
+            margin: 0 10px;
+        }
+
+        nav ul li a {
+            color: #ccc;
+            text-decoration: none;
+            font-size: 1em;
+        }
+
+        nav ul li a:hover {
+            color: #fff;
+        }
+
+        /* Main content */
+        main {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .panel {
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: none;
+            border: 1px solid #555;
+        }
+
+        .panel h3 {
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+        }
+
+        .panel-content {
+            background-color: #000000;
+            padding: 15px;
+        }
+
+        /* Drone Control Panel */
+        .drone-control {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .drone-control label {
+            display: block;
+            color: #ccc;
+        }
+
+        .drone-control input, 
+        .drone-control select, 
+        .drone-control textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #555;
+            background-color: #1a1a1a;
+            color: #fff;
+            border-radius: 3px;
+        }
+
+        .drone-control textarea {
+            resize: none;
+        }
+
+        /* Missions Panel */
+        .missions-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .mission-card {
+            background-color: #000000;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: none;
+            border: 1px solid #555;
+        }
+
+        .mission-card h4 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .mission-card p {
+            color: #aaa;
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: none;
+            border: 1px solid #555;
+        }
+
+        .settings-panel label {
+            display: block;
+            color: #ccc;
+            margin-bottom: 8px;
+        }
+
+        .settings-panel select,
+        .settings-panel textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #555;
+            background-color: #1a1a1a;
+            color: #fff;
+            border-radius: 3px;
+        }
+
+        /* Status Overview */
+        .status-overview {
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: none;
+            border: 1px solid #555;
+        }
+
+        .status-overview h3 {
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+        }
+
+        .status-overview p {
+            color: #aaa;
+            margin-bottom: 8px;
+        }
+
+        /* Buttons */
+        button {
+            background-color: #1a1a1a;
+            color: #ccc;
+            border: 1px solid #555;
+            padding: 12px 20px;
+            margin: 10px 0;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        button:hover {
+            background-color: #333;
+        }
+
+        /* Status Indicators */
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+        }
+
+        .status-indicator span {
+            color: #aaa;
+        }
+
+        /* Text in Red */
+        .text-red {
+            color: #ff0000;
+        }
+
+        /* Error Messages */
+        .error-message {
+            background-color: #1a1a1a;
+            color: #ff0000;
+            padding: 10px;
+            border: 1px solid #555;
+            border-radius: 3px;
+        }
+
+        /* New Panels: Logs, Live Feed, Performance, etc. */
+        .logs-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .log-card {
+            background-color: #000000;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: none;
+            border: 1px solid #555;
+        }
+
+        .log-card h4 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .log-card p {
+            color: #aaa;
+        }
+
+        .live-feed-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .feed-card {
+            background-color: #000000;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: none;
+            border: 1px solid #555;
+        }
+
+        .feed-card h4 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .feed-card p {
+            color: #aaa;
+        }
+
+        .performance-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .performance-card {
+            background-color: #000000;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: none;
+            border: 1px solid #555;
+        }
+
+        .performance-card h4 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .performance-card p {
+            color: #aaa;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .panel-content {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>.жэз</h1>
+        <div class="top-right-icon">
+            <img src="svr.png" alt="System Icon">
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#">Управление</a></li>
+            <li><a href="#">Миссии</a></li>
+            <li><a href="#">Настройки</a></li>
+            <li><a href="#">Статус</a></li>
+        </ul>
+    </nav>
+
+    <main>
+
+        <section class="panel">
+            <h3>Управление дронами</h3>
+            <div class="panel-content drone-control">
+                <label for="drone-id">Идентификатор дрона</label>
+                <input type="text" id="drone-id" placeholder="Введите ID дрона">
+                
+                <label for="flight-speed">Скорость полета</label>
+                <select id="flight-speed">
+                    <option value="low">Низкая</option>
+                    <option value="medium">Средняя</option>
+                    <option value="high">Высокая</option>
+                </select>
+                
+                <label for="altitude">Высота полета</label>
+                <input type="text" id="altitude" placeholder="Введите высоту">
+                
+                <label for="coordinates">Координаты</label>
+                <textarea id="coordinates" rows="4" placeholder="Введите координаты"></textarea>
+                
+                <label for="camera-settings">Настройки камеры</label>
+                <select id="camera-settings">
+                    <option value="infrared">Инфракрасная</option>
+                    <option value="daylight">Дневная</option>
+                    <option value="night">Ночная</option>
+                </select>
+                
+                <button id="control-send">Отправить</button>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h3>Миссии</h3>
+            <div class="panel-content missions-panel">
+                <div class="mission-card">
+                    <h4>Задание 1: Разведка территории</h4>
+                    <p>Цель: Обнаружение подозрительных объектов на заданной территории.</p>
+                    <p>Срок: Завтра, 14:00</p>
+                    <button>Назначить</button>
+                </div>
+                <div class="mission-card">
+                    <h4>Задание 2: Доставка грузов</h4>
+                    <p>Цель: Доставка медицинских препаратов в отдаленную местность.</p>
+                    <p>Срок: Сегодня, 22:00</p>
+                    <button>Назначить</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h3>Настройки</h3>
+            <div class="panel-content settings-panel">
+                <label for="timezone">Часовой пояс</label>
+                <select id="timezone">
+                    <option value="utc-5">UTC-5</option>
+                    <option value="utc-3">UTC-3</option>
+                    <option value="utc+1">UTC+1</option>
+                </select>
+                
+                <label for="alert-level">Уровень оповещения</label>
+                <select id="alert-level">
+                    <option value="low">Низкий</option>
+                    <option value="medium">Средний</option>
+                    <option value="high">Высокий</option>
+                </select>
+                
+                <button id="settings-save">Сохранить</button>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h3>Обзор статуса</h3>
+            <div class="panel-content status-overview">
+                <p>Активные дроны: 12</p>
+                <p>Состояние: Все дроны в сети</p>
+                <div class="status-indicator">
+                    <span>Связь с центральным сервером:</span> Подключена
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h3>Логи</h3>
+            <div class="panel-content logs-panel">
+                <div class="log-card">
+                    <h4>Лог 1</h4>
+                    <p>Обнаружена попытка входа с неизвестного устройства.</p>
+                    <p>Время: Сегодня, 10:45</p>
+                </div>
+                <div class="log-card">
+                    <h4>Лог 2</h4>
+                    <p>Системное обновление завершено успешно.</p>
+                    <p>Время: Вчера, 14:00</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h3>Живой поток</h3>
+            <div class="panel-content live-feed-panel">
+                <div class="feed-card">
+                    <h4>Поток 1</h4>
+                    <p>Получен сигнал с дрона №15.</p>
+                    <p>Время: Сегодня, 11:00</p>
+                </div>
+                <div class="feed-card">
+                    <h4>Поток 2</h4>
+                    <p>Камера дрона №8 активирована.</p>
+                    <p>Время: Вчера, 18:30</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h3>Показатели производительности</h3>
+            <div class="panel-content performance-panel">
+                <div class="performance-card">
+                    <h4>Использование ЦП</h4>
+                    <p>Сейчас: 45%</p>
+                    <p>Максимум: 90%</p>
+                </div>
+                <div class="performance-card">
+                    <h4>Использование ОЗУ</h4>
+                    <p>Сейчас: 60%</p>
+                    <p>Максимум: 90%</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h3>Ошибки</h3>
+            <div class="panel-content error-message">
+                <p>Ошибка соединения с сервером! Попробуйте снова позже.</p>
+            </div>
+        </section>
+
+    </main>
+
+</body>
+</html>
+</pre></body></html>

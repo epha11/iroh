@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KRONOS</title>
+    <link rel="icon" href="bosni.jpg">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #121212;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #1a1a1a;
+            border-bottom: 1px solid #333;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .tab {
+            background-color: #333;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        .tab:hover {
+            background-color: #444;
+        }
+        .tab .x {
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        .tab .x:hover {
+            color: red;
+        }
+        .search-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1;
+            margin-top: 50px;
+        }
+        .search-input {
+            background-color: #333;
+            border: 1px solid #444;
+            padding: 10px 20px;
+            color: white;
+            border-radius: 5px;
+            width: 500px;
+            font-size: 16px;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #666;
+        }
+        .settings-bar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .settings-bar .icon {
+            width: 20px;
+            height: 20px;
+            background-color: #444;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        .settings-bar .icon:hover {
+            background-color: #555;
+        }
+        .bookmarks {
+            margin-top: 30px;
+            padding: 10px 20px;
+            background-color: #1a1a1a;
+        }
+        .bookmark {
+            display: inline-block;
+            margin-right: 20px;
+            margin-bottom: 10px;
+            text-decoration: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            background-color: #333;
+        }
+        .bookmark:hover {
+            background-color: #444;
+        }
+        .bookmark .icon {
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="tabs">
+            <div class="tab">
+                <div class="icon">🔴</div>
+                <span>Tab 1</span>
+                <span class="x" onclick="closeTab(this)">✖</span>
+            </div>
+            <div class="tab">
+                <div class="icon">🔵</div>
+                <span>Tab 2</span>
+                <span class="x" onclick="closeTab(this)">✖</span>
+            </div>
+            <div class="tab">
+                <div class="icon">🟢</div>
+                <span>Tab 3</span>
+                <span class="x" onclick="closeTab(this)">✖</span>
+            </div>
+        </div>
+        <div class="settings-bar">
+            <div class="icon">⚙️</div>
+            <div class="icon">🔲</div>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-bar">
+        <input type="text" class="search-input" placeholder="Search the web" />
+    </div>
+
+    <!-- Bookmarks -->
+    <div class="bookmarks">
+        <a href="#" class="bookmark">
+            <div class="icon">🌐</div> Google
+        </a>
+        <a href="#" class="bookmark">
+            <div class="icon">📧</div> Gmail
+        </a>
+        <a href="#" class="bookmark">
+            <div class="icon">📖</div> Wikipedia
+        </a>
+        <a href="#" class="bookmark">
+            <div class="icon">💼</div> LinkedIn
+        </a>
+    </div>
+
+    <script>
+        function closeTab(element) {
+            element.parentElement.remove();
+        }
+    </script>
+
+</body>
+</html>
