@@ -1,0 +1,4 @@
+        .progress {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(to right, #006e6d, #00b8a9, #004a44); 

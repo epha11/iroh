@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Audio Visualizer with Mood Detection</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            transition: background 0.5s;
+        }
+
+        .controls {
+            width: 300px;
+            padding: 20px;
+            background: #111;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+            margin-right: 20px;
+        }
+
+        .controls h2 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #ff0080;
+        }
+
+        .file-upload {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .upload-label {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .upload-label:hover {
+            background-color: #444;
+        }
+
+        .slider {
+            width: 100%;
+            appearance: none;
+            background: #444;
+            height: 6px;
+            border-radius: 5px;
+            outline: none;
+            margin: 10px 0;
+            transition: background 0.3s;
+        }
+
+        .slider:hover {
+            background: #555;
+        }
+
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            background: #ff0080;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            background: #ff66b2;
+        }
+
+        canvas {
+            flex: 1;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <h2>Audio Controls</h2>
+        <div class="file-upload">
+            <label class="upload-label" for="fileInput">Choose File</label>
+            <input type="file" id="fileInput" accept="audio/*,video/*">
+        </div>
+        <label>Volume</label>
+        <input type="range" id="volume" class="slider" min="0" max="1" step="0.01" value="1">
+        <label>Bass Boost</label>
+        <input type="range" id="bass" class="slider" min="-30" max="30" value="0">
+        <label>Mid</label>
+        <input type="range" id="mid" class="slider" min="-30" max="30" value="0">
+        <label>Treble</label>
+        <input type="range" id="treble" class="slider" min="-30" max="30" value="0">
+        <label>Playback Speed</label>
+        <input type="range" id="speed" class="slider" min="0.5" max="2" step="0.1" value="1">
+        <label>Low-Frequency Filter</label>
+        <input type="range" id="lowFreq" class="slider" min="20" max="200" value="20">
+        <label>Left-Right Balance</label>
+        <input type="range" id="stereoBalance" class="slider" min="-1" max="1" step="0.01" value="0">
+        <br><br>
+        <button id="downloadBtn">Download Edited Audio</button>
+    </div>
+
+    <canvas id="audioCanvas"></canvas>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const canvas = document.getElementById('audioCanvas');
+        const ctx = canvas.getContext('2d');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        canvas.width = window.innerWidth * 0.65;
+        canvas.height = window.innerHeight * 0.8;
+
+        let audioCtx, audioSource, analyser, dataArray, bufferLength;
+        let bassFilter, midFilter, trebleFilter, lowFreqFilter, stereoPan;
+        let audio, audioBlob, audioUrl;
+        let mediaRecorder, recordedChunks = [];
+
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                // Clear existing audio if it exists
+                if (audio) {
+                    audio.pause();
+                    audio.src = ''; // Clear source to restart audio context
+                }
+
+                // Create new audio object
+                audio = new Audio(URL.createObjectURL(file));
+                audio.crossOrigin = "anonymous";
+
+                // Create new AudioContext and filters
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                audioSource = audioCtx.createMediaElementSource(audio);
+
+                bassFilter = audioCtx.createBiquadFilter();
+                bassFilter.type = "lowshelf";
+                bassFilter.frequency.value = 200;
+                bassFilter.gain.value = 0; // Neutral setting
+
+                midFilter = audioCtx.createBiquadFilter();
+                midFilter.type = "peaking";
+                midFilter.frequency.value = 1000;
+                midFilter.Q.value = 1;
+                midFilter.gain.value = 0; // Neutral setting
+
+                trebleFilter = audioCtx.createBiquadFilter();
+                trebleFilter.type = "highshelf";
+                trebleFilter.frequency.value = 3000;
+                trebleFilter.gain.value = 0; // Neutral setting
+
+                lowFreqFilter = audioCtx.createBiquadFilter();
+                lowFreqFilter.type = "lowpass";
+                lowFreqFilter.frequency.value = 100;
+
+                stereoPan = audioCtx.createStereoPanner();
+                analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 256;
+                bufferLength = analyser.frequencyBinCount;
+                dataArray = new Uint8Array(bufferLength);
+
+                // Connect the filters and analyser
+                audioSource.connect(bassFilter);
+                bassFilter.connect(midFilter);
+                midFilter.connect(trebleFilter);
+                trebleFilter.connect(lowFreqFilter);
+                lowFreqFilter.connect(stereoPan);
+                stereoPan.connect(analyser);
+                analyser.connect(audioCtx.destination);
+
+                // Start recording the audio output
+                const mediaStreamDestination = audioCtx.createMediaStreamDestination();
+                audioSource.connect(mediaStreamDestination);
+                mediaRecorder = new MediaRecorder(mediaStreamDestination.stream);
+
+                // Collect recorded audio chunks
+                mediaRecorder.ondataavailable = (e) => {
+                    recordedChunks.push(e.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(recordedChunks, { type: 'audio/wav' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const link = document.createElement('a');
+                    link.href = audioUrl;
+                    link.download = 'edited_audio.wav';
+                    link.click();
+                };
+
+                // Play audio with neutral settings
+                audio.play();
+                mediaRecorder.start();
+
+                // Start visualization
+                animateVisualizer();
+            }
+        });
+
+        // Handle all the control inputs
+        document.getElementById('bass').addEventListener('input', (e) => {
+            bassFilter.gain.value = e.target.value;
+        });
+
+        document.getElementById('mid').addEventListener('input', (e) => {
+            midFilter.gain.value = e.target.value;
+        });
+
+        document.getElementById('treble').addEventListener('input', (e) => {
+            trebleFilter.gain.value = e.target.value;
+        });
+
+        document.getElementById('volume').addEventListener('input', (e) => {
+            audio.volume = e.target.value;
+        });
+
+        document.getElementById('speed').addEventListener('input', (e) => {
+            audio.playbackRate = e.target.value;
+        });
+
+        document.getElementById('lowFreq').addEventListener('input', (e) => {
+            lowFreqFilter.frequency.value = e.target.value;
+        });
+
+        document.getElementById('stereoBalance').addEventListener('input', (e) => {
+            stereoPan.pan.value = e.target.value;
+        });
+
+        function animateVisualizer() {
+            requestAnimationFrame(animateVisualizer);
+            analyser.getByteFrequencyData(dataArray);
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const barWidth = (canvas.width / bufferLength) * 2.5;
+            let x = 0;
+            let avgBass = 0, avgMid = 0, avgTreble = 0;
+
+            for (let i = 0; i < bufferLength; i++) {
+                const barHeight = dataArray[i] * 1.5;
+                const gradient = ctx.createLinearGradient(x, canvas.height, x, canvas.height - barHeight);
+                gradient.addColorStop(0, 'magenta');
+                gradient.addColorStop(1, 'cyan');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+
+                if (i < bufferLength * 0.3) avgBass += dataArray[i];
+                else if (i < bufferLength * 0.7) avgMid += dataArray[i];
+                else avgTreble += dataArray[i];
+
+                x += barWidth + 1;
+            }
+
+            avgBass /= (bufferLength * 0.3);
+            avgMid /= (bufferLength * 0.4);
+            avgTreble /= (bufferLength * 0.3);
+        }
+
+        // Handle download button
+        downloadBtn.addEventListener('click', () => {
+            if (mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            } else {
+                alert('No audio recorded yet!');
+            }
+        });
+    </script>
+</body>
+</html>

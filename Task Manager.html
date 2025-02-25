@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Task Manager</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            font-family: "Courier New", monospace;
+            color: #fff;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100%;
+        }
+
+        header {
+            background-color: #1a1a1a;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #333;
+        }
+
+        header h1 {
+            font-size: 18px;
+            color: #0fdfaf;
+        }
+
+        .task-manager {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th, table td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #333;
+        }
+
+        table th {
+            background-color: #1a1a1a;
+            color: #0fdfaf;
+        }
+
+        .usage-bar {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .usage-bar div {
+            height: 10px;
+            border-radius: 5px;
+            transition: width 0.3s ease-in-out; /* Shorter transition for smoother updates */
+        }
+
+        .usage-bar:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            top: -20px;
+            left: 0;
+            background: #333;
+            color: #fff;
+            padding: 2px 5px;
+            font-size: 10px;
+            border-radius: 3px;
+            white-space: nowrap;
+        }
+
+        .cpu {
+            background: linear-gradient(90deg, #ff0000, #ff7f00);
+        }
+
+        .memory {
+            background: linear-gradient(90deg, #00ff00, #7fff00);
+        }
+
+        .network {
+            background: linear-gradient(90deg, #007fff, #00ffff);
+        }
+
+        .disk {
+            background: linear-gradient(90deg, #ff00ff, #ff77ff);
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            margin-right: 10px;
+            object-fit: contain;
+        }
+
+        .actions button {
+            margin-right: 5px;
+            padding: 5px 10px;
+            font-size: 12px;
+            color: #fff;
+            background-color: #333;
+            border: 1px solid #555;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .actions button:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Advanced Task Manager</h1>
+            <p>System Performance Dashboard</p>
+        </header>
+        <div class="task-manager">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Program</th>
+                        <th>PID</th>
+                        <th>Priority</th>
+                        <th>CPU (%)</th>
+                        <th>Memory (%)</th>
+                        <th>Network (KB/s)</th>
+                        <th>Disk (%)</th>
+                        <th>Uptime</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="taskTable">
+                    <!-- Program rows will be dynamically generated -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // List of programs
+        const programs = [
+        { "name": "Tor Browser", "priority": "High", "icon": "tor.jpeg" },
+    { "name": "VLC Media Player", "priority": "Normal", "icon": "vlc.png" },
+    { "name": "GIMP", "priority": "Normal", "icon": "gimp.png" },
+    { "name": "Blender", "priority": "High", "icon": "blender.png" },
+    { "name": "7-Zip", "priority": "Normal", "icon": "7zip.png" },
+    { "name": "qBittorrent", "priority": "Normal", "icon": "qbittorrent.png" },
+    { "name": "Audacity", "priority": "Low", "icon": "audacity.png" },
+    { "name": "HandBrake", "priority": "Low", "icon": "handbrake.png" },
+    { "name": "KeePass", "priority": "High", "icon": "keepass.png" },
+    { "name": "Discord", "priority": "Normal", "icon": "discord.png" },
+    { "name": "Notepad++", "priority": "Normal", "icon": "notepad++.png" },
+    { "name": "FileZilla", "priority": "Normal", "icon": "filezilla.png" },
+    { "name": "VirtualBox", "priority": "High", "icon": "virtualbox.png" },
+    { "name": "Wireshark", "priority": "High", "icon": "wireshark.png" },
+    { "name": "Nmap", "priority": "Normal", "icon": "nmap.png" },
+    { "name": "PuTTY", "priority": "Normal", "icon": "putty.png" },
+    { "name": "WinRAR", "priority": "Normal", "icon": "winrar.png" },
+    { "name": "Steam", "priority": "High", "icon": "steam.png" },
+    { "name": "F.lux", "priority": "Low", "icon": "flux.png" },
+    { "name": "Clementine", "priority": "Low", "icon": "clementine.png" },
+    { "name": "Sublime Text", "priority": "Normal", "icon": "sublime_text.svg" },
+    { "name": "OBS Studio", "priority": "High", "icon": "obs.png" },
+    { "name": "Minitube", "priority": "Low", "icon": "minitube.svg" },
+    { "name": "Brave Browser", "priority": "High", "icon": "brave.png" },
+    { "name": "Signal", "priority": "Normal", "icon": "signal.png" },
+    { "name": "Telegram", "priority": "Normal", "icon": "telegram.png" },
+
+            
+        ];
+
+        // Generate random percentages and data
+        function randomPercent() {
+            return Math.floor(Math.random() * 100);
+        }
+
+        function randomNetworkUsage() {
+            return (Math.random() * 100).toFixed(2);
+        }
+
+        function randomUptime() {
+            return `${Math.floor(Math.random() * 48)}h ${Math.floor(Math.random() * 120)}m`;
+        }
+
+        // Generate table rows
+        function generateTableRow(program, pid) {
+            return `
+                <tr>
+                    <td><img class="icon" src="${program.icon}" alt="${program.name}">${program.name}</td>
+                    <td>${pid}</td>
+                    <td>${program.priority}</td>
+                    <td>
+                        <div class="usage-bar" data-tooltip="CPU: ${randomPercent()}%">
+                            <div class="cpu" style="width: ${randomPercent()}%;"></div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="usage-bar" data-tooltip="Memory: ${randomPercent()}%">
+                            <div class="memory" style="width: ${randomPercent()}%;"></div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="usage-bar" data-tooltip="Network: ${randomNetworkUsage()} KB/s">
+                            <div class="network" style="width: ${randomPercent()}%;"></div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="usage-bar" data-tooltip="Disk: ${randomPercent()}%">
+                            <div class="disk" style="width: ${randomPercent()}%;"></div>
+                        </div>
+                    </td>
+                    <td>${randomUptime()}</td>
+                    <td class="actions">
+                        <button onclick="alert('Killed PID ${pid}')">Kill</button>
+                        <button onclick="alert('Reprioritized PID ${pid}')">Reprioritize</button>
+                        <button onclick="alert('Suspended PID ${pid}')">Suspend</button>
+                        <button onclick="alert('Inspecting PID ${pid}')">Inspect</button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Render the table
+        function renderTable() {
+            const tableBody = document.getElementById("taskTable");
+            tableBody.innerHTML = "";
+            programs.forEach((program, index) => {
+                const pid = 1000 + index;
+                tableBody.innerHTML += generateTableRow(program, pid);
+            });
+        }
+
+        // Update the table every 500ms for smoother updates
+        setInterval(renderTable, 500);
+        renderTable();
+    </script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Audio Visualizer with Mood Detection</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            transition: background 0.5s;
+        }
+
+        .controls {
+            width: 300px;
+            padding: 20px;
+            background: #111;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+            margin-right: 20px;
+        }
+
+        .controls h2 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #ff0080;
+        }
+
+        .file-upload {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .upload-label {
+            background-color: #333;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .upload-label:hover {
+            background-color: #444;
+        }
+
+        .slider {
+            width: 100%;
+            appearance: none;
+            background: #444;
+            height: 6px;
+            border-radius: 5px;
+            outline: none;
+            margin: 10px 0;
+            transition: background 0.3s;
+        }
+
+        .slider:hover {
+            background: #555;
+        }
+
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            background: #ff0080;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            background: #ff66b2;
+        }
+
+        canvas {
+            flex: 1;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+        }
+        
+        
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <h2>Audio Controls</h2>
+        <div class="file-upload">
+            <label class="upload-label" for="fileInput">Choose File</label>
+            <input type="file" id="fileInput" accept="audio/*,video/*">
+        </div>
+        <label>Bass Boost</label>
+        <input type="range" id="bass" class="slider" min="-30" max="30" value="0">
+        <label>Mid</label>
+        <input type="range" id="mid" class="slider" min="-30" max="30" value="0">
+        <label>Treble</label>
+        <input type="range" id="treble" class="slider" min="-30" max="30" value="0">
+    </div>
+
+    <canvas id="audioCanvas"></canvas>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const canvas = document.getElementById('audioCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth * 0.65;
+        canvas.height = window.innerHeight * 0.8;
+
+        let audioCtx, audioSource, analyser, dataArray, bufferLength;
+        let bassFilter, midFilter, trebleFilter;
+        let audio;
+
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                if (audio) audio.pause();
+                audio = new Audio(URL.createObjectURL(file));
+                audio.crossOrigin = "anonymous";
+
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                audioSource = audioCtx.createMediaElementSource(audio);
+
+                bassFilter = audioCtx.createBiquadFilter();
+                bassFilter.type = "lowshelf";
+                bassFilter.frequency.value = 200;
+
+                midFilter = audioCtx.createBiquadFilter();
+                midFilter.type = "peaking";
+                midFilter.frequency.value = 1000;
+                midFilter.Q.value = 1;
+
+                trebleFilter = audioCtx.createBiquadFilter();
+                trebleFilter.type = "highshelf";
+                trebleFilter.frequency.value = 3000;
+
+                analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 256;
+                bufferLength = analyser.frequencyBinCount;
+                dataArray = new Uint8Array(bufferLength);
+
+                audioSource.connect(bassFilter);
+                bassFilter.connect(midFilter);
+                midFilter.connect(trebleFilter);
+                trebleFilter.connect(analyser);
+                analyser.connect(audioCtx.destination);
+
+                audio.play();
+                animateVisualizer();
+            }
+        });
+
+        document.getElementById('bass').addEventListener('input', (e) => {
+            bassFilter.gain.value = e.target.value;
+        });
+
+        document.getElementById('mid').addEventListener('input', (e) => {
+            midFilter.gain.value = e.target.value;
+        });
+
+        document.getElementById('treble').addEventListener('input', (e) => {
+            trebleFilter.gain.value = e.target.value;
+        });
+
+        function animateVisualizer() {
+            requestAnimationFrame(animateVisualizer);
+            analyser.getByteFrequencyData(dataArray);
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const barWidth = (canvas.width / bufferLength) * 2.5;
+            let x = 0;
+            let avgBass = 0, avgMid = 0, avgTreble = 0;
+
+            for (let i = 0; i < bufferLength; i++) {
+                const barHeight = dataArray[i] * 1.5;
+                const gradient = ctx.createLinearGradient(x, canvas.height, x, canvas.height - barHeight);
+                gradient.addColorStop(0, 'magenta');
+                gradient.addColorStop(1, 'cyan');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+
+                if (i < bufferLength * 0.3) avgBass += dataArray[i];
+                else if (i < bufferLength * 0.7) avgMid += dataArray[i];
+                else avgTreble += dataArray[i];
+
+                x += barWidth + 1;
+            }
+
+            avgBass /= bufferLength * 0.3;
+            avgMid /= bufferLength * 0.4;
+            avgTreble /= bufferLength * 0.3;
+
+            const moodHue = Math.floor((avgBass + avgMid + avgTreble) / 3);
+            document.body.style.background = `hsl(${moodHue}, 50%, 15%)`;
+        }
+    </script>
+</body>
+</html>

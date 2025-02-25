@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WitherOS File Explorer Mod Extension (Linux)</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Segoe UI, Arial, sans-serif;
+            background-color: #121212; /* Dark background for the body */
+            color: #e0e0e0; /* Light text color */
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .window {
+            width: 80vw;
+            height: 80vh;
+            border: none;
+            border-radius: 8px;
+            background-color: #1e1e1e; /* Darker gray for the window background */
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5); /* Stronger shadow for better contrast */
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .window-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 16px;
+            background-color: #121212; /* Darker header background */
+            border-bottom: 1px solid #444;
+            color: #e0e0e0; /* Light text color */
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .window-title {
+            display: flex;
+            align-items: center;
+        }
+
+        .window-controls {
+            display: flex;
+            align-items: center;
+        }
+
+        .control-button {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin: 0 6px;
+            text-align: center;
+            line-height: 18px;
+            font-size: 14px;
+            color: #121212; /* Dark color for the text inside buttons */
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #e0e0e0; /* Light background for control buttons */
+        }
+
+        .yellow {
+            background-color: #f2f202;
+        }
+
+        .green {
+            background-color: #34d602;
+        }
+
+        .red {
+            background-color: #f70207;
+        }
+
+        .window-content {
+            display: flex;
+            height: calc(100% - 40px);
+            overflow: hidden;
+            background-color: #121212; /* Match content background with window background */
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #1f1f1f; /* Darker sidebar background */
+            border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            box-shadow: 1px 0 0 rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+        }
+
+        .sidebar-item {
+            padding: 12px;
+            margin-bottom: 6px;
+            border-radius: 4px;
+            color: #e0e0e0; /* Light text color for sidebar items */
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .sidebar-item:hover {
+            background-color: #333; /* Slightly lighter background on hover */
+        }
+
+        .sidebar-item-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0078d4;
+        }
+
+        .expand-btn {
+            margin-left: auto;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.3s ease;
+        }
+
+        .subfolders {
+            display: none;
+            margin-top: 8px;
+            padding-left: 20px;
+            font-size: 14px;
+        }
+
+        .sidebar-item.expanded .subfolders {
+            display: block;
+        }
+
+        .file-list {
+            flex-grow: 1;
+            padding: 12px;
+            overflow-y: auto;
+            background-color: #1e1e1e; /* Match file list background with window content */
+        }
+
+        .file {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 4px;
+            background-color: #333; /* Dark background for files */
+            margin-bottom: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            position: relative;
+        }
+
+        .file:hover {
+            background-color: #444; /* Slightly lighter background on hover */
+        }
+
+        .file-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .file-icon.code {
+            background-image: url('file:///home/chronos/u-a22775739ea1d22e4f15cb41f2d9bac7868e97fd/MyFiles/Downloads/markup.png');
+        }
+
+        .file-icon.doc {
+            content: "📄"; /* Unicode character for document icon */
+            font-size: 30px;
+            background-color: transparent; /* Make sure there's no background image */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-icon.img {
+            content: "🖼"; /* Unicode character for image icon */
+            font-size: 30px;
+            background-color: transparent; /* Make sure there's no background image */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-icon.package {
+            background-image: url('file:///home/chronos/u-a22775739ea1d22e4f15cb41f2d9bac7868e97fd/MyFiles/Downloads/2024_08_21_0yt_Kleki.png');
+        }
+
+        .file-upload {
+            display: none;
+        }
+
+        .file-upload-button {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background-color: #0078d4;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .context-menu {
+            display: none;
+            position: absolute;
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            min-width: 150px;
+            border-radius: 4px;
+        }
+
+        .context-menu-item {
+            padding: 12px;
+            color: #e0e0e0;
+            cursor: pointer;
+            font-size: 14px;
+            border-bottom: 1px solid #333;
+            transition: background-color 0.3s ease;
+        }
+
+        .context-menu-item:hover {
+            background-color: #0078d4; /* Blue background on hover */
+            color: #fff; /* White text color on hover */
+        }
+
+        .context-menu-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="window">
+        <div class="window-header">
+            <span class="window-title">File Explorer</span>
+            <div class="window-controls">
+                <div class="control-button yellow" title="Minimize" id="minimize-btn">−</div>
+                <div class="control-button green" title="Maximize" id="maximize-btn">⇱</div>
+                <div class="control-button red" title="Close" id="close-btn">×</div>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="sidebar">
+                <div class="sidebar-item" onclick="showContent('quick-access')">
+                    <span class="sidebar-item-icon">📂</span>Quick Access
+                    <span class="expand-btn">▶</span>
+                    <div class="subfolders">
+                        <div>Recent Files</div>
+                        <div>Pinned Folders</div>
+                    </div>
+                </div>
+                <div class="sidebar-item" onclick="showContent('documents')">
+                    <span class="sidebar-item-icon">📁</span>Documents
+                    <span class="expand-btn">▶</span>
+                    <div class="subfolders">
+                        <div>Work</div>
+                        <div>Personal</div>
+                    </div>
+                </div>
+                <div class="sidebar-item" onclick="showContent('pictures')">
+                    <span class="sidebar-item-icon">🖼️</span>Pictures
+                    <span class="expand-btn">▶</span>
+                    <div class="subfolders">
+                        <div>Vacation</div>
+                        <div>Family</div>
+                    </div>
+                </div>
+                <div class="sidebar-item" onclick="showContent('videos')">
+                    <span class="sidebar-item-icon">🎥</span>Videos
+                </div>
+                <div class="sidebar-item" onclick="showContent('this-pc')">
+                    <span class="sidebar-item-icon">🖥️</span>This PC
+                </div>
+                <div class="sidebar-item" onclick="showContent('network')">
+                    <span class="sidebar-item-icon">🌐</span>Network
+                </div>
+                <div class="sidebar-item" onclick="showContent('apps')">
+                    <span class="sidebar-item-icon">💾</span>Applications
+                </div>
+                <div class="sidebar-item" onclick="showContent('encrypted')">
+                    <span class="sidebar-item-icon">🔒</span>Eny
+                </div>
+                <div class="sidebar-item" onclick="showContent('this-pc')">
+                    <span class="sidebar-item-icon">📂</span>sierra-os/estee
+                </div>
+                <div class="sidebar-item" onclick="showContent('this-pc')">
+                    <span class="sidebar-item-icon">🖨</span>Scanned Documents
+                </div>
+            </div>
+            <div class="file-list" id="file-list">
+                <!-- Default content or loading message -->
+                <div></div>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" class="file-upload" id="file-upload" multiple>
+    <button class="file-upload-button" id="upload-button">Upload File</button>
+
+    <div class="context-menu" id="context-menu">
+        <div class="context-menu-item" onclick="openFile()">Open File</div>
+        <div class="context-menu-item" onclick="convertFile()">Convert File</div>
+        <div class="context-menu-item" onclick="copyFilePath()">Copy File Path</div>
+        <div class="context-menu-item" onclick="copyImage()">Copy Image</div>
+        <div class="context-menu-item" onclick="deleteFile()">Delete</div>
+        <div class="context-menu-item" onclick="renameFile()">Rename</div>
+        <div class="context-menu-item" onclick="showProperties()">Properties</div>
+        <div class="context-menu-item" onclick="downloadFile()">Download</div>
+        <div class="context-menu-item" onclick="shareFile()">Share</div>
+        <div class="context-menu-item" onclick="moveFile()">Move</div>
+        <div class="context-menu-item" onclick="copyFile()">Copy</div>
+        <div class="context-menu-item" onclick="addToFavorites()">Add to Favorites</div>
+        <div class="context-menu-item" onclick="openContainingFolder()">Open Containing Folder</div>
+        <div class="context-menu-item" onclick="printFile()">Print</div>
+    </div>
+
+    <script>
+        const fileTypes = {
+            'html': 'code',
+            'css': 'code',
+            'php': 'code',
+            'sql': 'code',
+            'js': 'code',
+            'json': 'code',
+            'wer': 'code',
+            'py': 'code',
+            'cs': 'code',
+            'cpp': 'code',
+            'lua': 'code',
+            'doc': 'doc',
+            'txt': 'doc',
+            'pptx': 'doc',
+            'docx': 'doc',
+            'pdf': 'doc',
+            'img': 'img',
+            'png': 'img',
+            'jpg': 'img',
+            'jpeg': 'img',
+            'blend': 'img',
+            'app': 'package',
+            'exe': 'package',
+            'ext': 'package',
+            'vex': 'package',
+            'zip': 'package',
+            'tar.gz': 'package'
+        };
+
+        const contextMenu = document.getElementById('context-menu');
+        let selectedFile = null;
+
+        const content = {
+            'quick-access': '<div>Recent Files</div><div>Pinned Folders</div>',
+            'documents': '<div>Work</div><div>Personal</div>',
+            'pictures': '<div>Vacation</div><div>Family</div>',
+            'videos': '<div>Video Files</div>',
+            'this-pc': '<div>System Drives</div>',
+            'network': '<div>Network Locations</div>'
+        };
+
+        function showContent(section) {
+            document.getElementById('file-list').innerHTML = content[section] || '<div>Select a folder from the sidebar</div>';
+        }
+
+        function handleFileClick(event) {
+            const file = event.currentTarget;
+            if (selectedFile) {
+                selectedFile.classList.remove('selected');
+            }
+            selectedFile = file;
+            file.classList.add('selected');
+            showContextMenu(event);
+        }
+
+        function showContextMenu(event) {
+            contextMenu.style.display = 'block';
+            contextMenu.style.top = `${event.clientY}px`;
+            contextMenu.style.left = `${event.clientX}px`;
+        }
+
+        function hideContextMenu() {
+            contextMenu.style.display = 'none';
+        }
+
+        function openFile() {
+            if (selectedFile) {
+                window.open(selectedFile.getAttribute('data-path'), '_blank');
+            }
+        }
+
+        function convertFile() {
+            alert('Convert file functionality');
+            hideContextMenu();
+        }
+
+        function copyFilePath() {
+            if (selectedFile) {
+                navigator.clipboard.writeText(selectedFile.getAttribute('data-path'));
+                alert('File path copied');
+            }
+            hideContextMenu();
+        }
+
+        function copyImage() {
+            alert('Copy image functionality');
+            hideContextMenu();
+        }
+
+        function deleteFile() {
+            if (selectedFile) {
+                selectedFile.remove();
+                alert('Are you sure you want to delete this file?');
+            }
+            hideContextMenu();
+        }
+
+        function renameFile() {
+            if (selectedFile) {
+                const newName = prompt('Enter new file name', selectedFile.querySelector('.file-name').textContent);
+                if (newName) {
+                    selectedFile.querySelector('.file-name').textContent = newName;
+                }
+            }
+            hideContextMenu();
+        }
+
+        function showProperties() {
+            alert('Show properties functionality');
+            hideContextMenu();
+        }
+
+        function downloadFile() {
+            alert('Download file functionality');
+            hideContextMenu();
+        }
+
+        function shareFile() {
+            alert('Share file functionality');
+            hideContextMenu();
+        }
+
+        function moveFile() {
+            alert('Move file functionality');
+            hideContextMenu();
+        }
+
+        function copyFile() {
+            alert('Copy file functionality');
+            hideContextMenu();
+        }
+
+        function addToFavorites() {
+            alert('Add to favorites functionality');
+            hideContextMenu();
+        }
+
+        function openContainingFolder() {
+            alert('Open containing folder functionality');
+            hideContextMenu();
+        }
+
+        function printFile() {
+            alert('Print file functionality');
+            hideContextMenu();
+        }
+
+        document.getElementById('close-btn').addEventListener('click', function() {
+            window.close();
+        });
+
+        document.getElementById('minimize-btn').addEventListener('click', function() {
+            document.querySelector('.window').style.display = 'none'; // Simulates minimizing
+        });
+
+        document.getElementById('maximize-btn').addEventListener('click', function() {
+            const windowElement = document.querySelector('.window');
+            if (windowElement.style.width === '100vw' && windowElement.style.height === '100vh') {
+                windowElement.style.width = '80vw';
+                windowElement.style.height = '80vh';
+            } else {
+                windowElement.style.width = '100vw';
+                windowElement.style.height = '100vh';
+            }
+        });
+
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.addEventListener('click', function() {
+                if (this.querySelector('.subfolders')) {
+                    this.classList.toggle('expanded');
+                }
+                showContent(this.innerText.split('\n')[0].trim().toLowerCase().replace(/\s+/g, '-'));
+            });
+        });
+
+        document.getElementById('upload-button').addEventListener('click', function() {
+            document.getElementById('file-upload').click();
+        });
+
+        document.getElementById('file-upload').addEventListener('change', function(event) {
+            const files = event.target.files;
+            const fileList = document.getElementById('file-list');
+            
+            Array.from(files).forEach(file => {
+                const fileType = file.name.split('.').pop();
+                const fileClass = fileTypes[fileType] || 'doc';
+                const fileDiv = document.createElement('div');
+                fileDiv.className = 'file';
+                fileDiv.setAttribute('data-path', URL.createObjectURL(file));
+                
+                const iconContent = fileClass === 'code' ? 
+                    'file:///home/chronos/u-a22775739ea1d22e4f15cb41f2d9bac7868e97fd/MyFiles/Downloads/markup.png' : 
+                    fileClass === 'package' ? 'file:///home/chronos/u-a22775739ea1d22e4f15cb41f2d9bac7868e97fd/MyFiles/Downloads/2024_08_21_0yt_Kleki.png' : 
+                    fileClass === 'img' ? '🖼' : '📄';
+                
+                fileDiv.innerHTML = `
+                    <div class="file-icon ${fileClass}" style="${fileClass === 'code' || fileClass === 'package' ? 'background-image: url(' + iconContent + ')' : ''}">${fileClass === 'code' || fileClass === 'package' ? '' : iconContent}</div>
+                    <div class="file-name">${file.name}</div>
+                `;
+
+                fileDiv.addEventListener('click', handleFileClick);
+                fileDiv.addEventListener('dblclick', openFile);
+                
+                fileList.appendChild(fileDiv);
+            });
+        });
+
+        document.addEventListener('click', function(event) {
+            if (!contextMenu.contains(event.target) && !selectedFile?.contains(event.target)) {
+                hideContextMenu();
+            }
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.key === ';') {
+                document.getElementById('upload-button').click();
+            }
+        });
+
+        document.querySelectorAll('.file').forEach(file => {
+            file.addEventListener('contextmenu', function(event) {
+                event.preventDefault();
+                showContextMenu(event);
+            });
+        });
+    </script>
+</body>
+</html>

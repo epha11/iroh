@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Processor Clone</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&family=Montserrat:wght@300;400;700&display=swap');
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #toolbar {
+            background: #fff;
+            padding: 10px;
+            border-bottom: 2px solid #ccc;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            width: 100%;
+            justify-content: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        button, select, input {
+            padding: 8px;
+            margin: 5px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            background: #fff;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #e0e0e0;
+        }
+
+        #document {
+            margin-top: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .page {
+            width: 800px;
+            height: 1123px;
+            background: #fff;
+            margin: 15px 0;
+            padding: 40px;
+            border: 1px solid #ccc;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            overflow-y: hidden;
+            position: relative;
+        }
+
+        .page:last-child::after {
+            content: "";
+            display: block;
+            height: 50px;
+        }
+
+        .page[contenteditable="true"]:focus {
+            outline: none;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            cursor: grab;
+            resize: both;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div id="toolbar">
+        <button onclick="execCmd('bold')"><b>B</b></button>
+        <button onclick="execCmd('italic')"><i>I</i></button>
+        <button onclick="execCmd('underline')"><u>U</u></button>
+        <button onclick="execCmd('strikeThrough')"><s>S</s></button>
+        <button onclick="execCmd('subscript')">X<sub>2</sub></button>
+        <button onclick="execCmd('superscript')">X<sup>2</sup></button>
+
+        <button onclick="execCmd('justifyLeft')">⬅</button>
+        <button onclick="execCmd('justifyCenter')">⬛</button>
+        <button onclick="execCmd('justifyRight')">➡</button>
+        <button onclick="execCmd('justifyFull')">📃</button>
+
+        <select onchange="execCmdWithArg('fontName', this.value)">
+            <option value="Arial">Arial</option>
+            <option value="Courier New">Courier New</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Verdana">Verdana</option>
+            <option value="Roboto">Roboto</option>
+            <option value="Montserrat">Montserrat</option>
+        </select>
+
+        <input type="number" id="fontSizeInput" placeholder="Font size" min="1" max="100" style="width: 60px;">
+        <button onclick="setFontSize()">✔</button>
+
+        <input type="color" onchange="execCmdWithArg('foreColor', this.value)">
+        <input type="color" onchange="execCmdWithArg('hiliteColor', this.value)">
+
+        <button onclick="execCmd('undo')">↩ Undo</button>
+        <button onclick="execCmd('redo')">↪ Redo</button>
+        <button onclick="execCmd('removeFormat')">🚫 Clear</button>
+
+        <button onclick="saveAsHTML()">💾 Save as HTML</button>
+        <button onclick="saveAsText()">📄 Save as TXT</button>
+        <button onclick="saveAsPDF()">📜 Save as PDF</button>
+
+        <input type="file" id="imageInput" accept="image/*">
+    </div>
+
+    <div id="document">
+        <div class="page" contenteditable="true" oninput="checkPageOverflow(this)"></div>
+    </div>
+
+    <div class="file-upload-wrapper">
+        <input type="file" id="imageInput" accept="image/*">
+        <label for="imageInput">+</label>
+    </div>
+    
+
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+    const editor = document.getElementById("editor");
+    const fontSizeInput = document.getElementById("fontSizeInput");
+    const fontSelect = document.getElementById("fontSelect");
+    const imageInput = document.getElementById("imageInput");
+
+    // Ensure each page is editable
+    function makePagesEditable() {
+        document.querySelectorAll(".page").forEach(page => {
+            page.contentEditable = true;
+        });
+    }
+    makePagesEditable();
+
+    // Auto add pages when needed
+    editor.addEventListener("input", () => {
+        let pages = document.querySelectorAll(".page");
+        let lastPage = pages[pages.length - 1];
+
+        if (lastPage.scrollHeight > lastPage.clientHeight) {
+            let newPage = document.createElement("div");
+            newPage.classList.add("page");
+            newPage.contentEditable = "true";
+            editor.appendChild(newPage);
+            makePagesEditable();
+        }
+    });
+
+    // Font size input
+    fontSizeInput.addEventListener("input", () => {
+        let size = fontSizeInput.value;
+        if (size >= 8 && size <= 100) {
+            document.execCommand("fontSize", false, "7");
+            let spans = document.getElementsByTagName("span");
+            for (let i = 0; i < spans.length; i++) {
+                if (spans[i].style.fontSize === "xxx-large") {
+                    spans[i].style.fontSize = size + "px";
+                }
+            }
+        }
+    });
+
+    // Font selection
+    fontSelect.addEventListener("change", () => {
+        document.execCommand("fontName", false, fontSelect.value);
+    });
+
+    // Image upload
+    imageInput.addEventListener("change", (event) => {
+        let file = event.target.files[0];
+        if (file) {
+            let reader = new FileReader();
+            reader.onload = function (e) {
+                let img = document.createElement("img");
+                img.src = e.target.result;
+                img.style.maxWidth = "100%";
+                img.style.height = "auto";
+                img.contentEditable = "false"; // Prevent accidental edits
+                document.getSelection().getRangeAt(0).insertNode(img);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+});
+
+    </script>
+</body>
+</html>

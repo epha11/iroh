@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Floki OS</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600&display=swap');
+
+        body {
+            font-family: "Segoe UI Variable", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: rgba(30, 30, 30, 0.7);
+            backdrop-filter: blur(15px);
+            color: white;
+            display: flex;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .settings-container {
+            display: flex;
+            width: 100%;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: rgba(50, 50, 50, 0.5);
+            padding: 20px;
+            backdrop-filter: blur(15px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar ul li {
+            padding: 12px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .sidebar ul li:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #444;
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+        }
+
+        .profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-left: 10px;
+        }
+
+        /* Sections */
+        .settings-section {
+            display: none;
+            background: rgba(30, 30, 30, 0.7);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            margin-top: 10px;
+        }
+
+        /* Wi-Fi List */
+        .wifi-list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .wifi-list ul li {
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .wifi-list ul li:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Wi-Fi Popup */
+        .wifi-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(30, 30, 30, 0.9);
+            border-radius: 12px;
+            padding: 20px;
+            width: 300px;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .wifi-popup input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            border-bottom: 2px solid purple;
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .wifi-popup button {
+            width: 100%;
+            margin-top: 10px;
+            background: linear-gradient(to bottom, #2d89ef, #0078D7);
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            color: white;
+        }
+
+        .wifi-popup button:hover {
+            background: #0056a6;
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h2>Settings</h2>
+            <ul>
+                <li onclick="showSection('system')">System</li>
+                <li onclick="showSection('bluetooth')">Bluetooth & Devices</li>
+                <li onclick="showSection('network')">Network & Internet</li>
+                <li onclick="showSection('personalization')">Personalization</li>
+                <li onclick="showSection('accounts')">Accounts</li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h1>Settings</h1>
+                <div class="profile">
+                    <img src="over.jpg" alt="Profile Picture">
+                    <span>Floki</span>
+                </div>
+            </div>
+
+            <!-- Sections -->
+            <div id="system" class="settings-section">
+                <h2>System</h2>
+                <p>System settings go here.</p>
+            </div>
+
+            <div id="network" class="settings-section">
+                <h2>Wi-Fi Settings</h2>
+                <div class="wifi-list">
+                    <h3>Available Networks</h3>
+                    <ul>
+                        <li onclick="showWiFiPopup('TEG-50L')">TEG-50L</li>
+                        <li onclick="showWiFiPopup('Linksys03197')">Linksys03197</li>
+                        <li onclick="showWiFiPopup('Ray\'s Ranch')">Ray's Ranch</li>
+                        <li onclick="showWiFiPopup('OFFICE_JetPro-HP')">OFFICE_JetPro-HP</li>
+                        <li onclick="showWiFiPopup('Liahona')">Liahona</li>
+                        <li onclick="showWiFiPopup('SD27J')">SD27J</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wi-Fi Password Popup -->
+    <div class="wifi-popup" id="wifiPopup">
+        <h3>Enter Wi-Fi Password</h3>
+        <input type="password" id="wifiPassword" placeholder="Password">
+        <button onclick="connectWiFi()">Connect</button>
+    </div>
+
+    <script>
+        function showSection(id) {
+            document.querySelectorAll(".settings-section").forEach(section => {
+                section.style.display = "none";
+            });
+            document.getElementById(id).style.display = "block";
+        }
+
+        let selectedWiFi = "";
+
+        function showWiFiPopup(network) {
+            selectedWiFi = network;
+            document.getElementById("wifiPopup").style.display = "block";
+        }
+
+        function connectWiFi() {
+            const popup = document.getElementById("wifiPopup");
+            const passwordInput = document.getElementById("wifiPassword");
+
+            popup.innerHTML = `<h3>Connecting to ${selectedWiFi}...</h3>`;
+            setTimeout(() => {
+                popup.innerHTML = `<h3>Connected to ${selectedWiFi}!</h3>`;
+                setTimeout(() => {
+                    popup.style.display = "none";
+                    passwordInput.value = "";
+                }, 1500);
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rounded Corners Image Uploader</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        canvas {
+            margin-top: 20px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h2>Upload an Image to Round Its Corners</h2>
+    <input type="file" id="imageInput" accept="image/*">
+    <canvas id="canvas"></canvas>
+    <br>
+    <a id="downloadLink" style="display:none;" download="rounded-image.png">Download Rounded Image</a>
+    
+    <script>
+        document.getElementById('imageInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.getElementById('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const size = Math.min(img.width, img.height);
+                    
+                    canvas.width = size;
+                    canvas.height = size;
+                    
+                    ctx.clearRect(0, 0, size, size);
+                    ctx.beginPath();
+                    const radius = 20; // Adjust for roundness
+                    ctx.moveTo(radius, 0);
+                    ctx.arcTo(size, 0, size, size, radius);
+                    ctx.arcTo(size, size, 0, size, radius);
+                    ctx.arcTo(0, size, 0, 0, radius);
+                    ctx.arcTo(0, 0, size, 0, radius);
+                    ctx.closePath();
+                    ctx.clip();
+                    ctx.drawImage(img, 0, 0, size, size);
+                    
+                    const downloadLink = document.getElementById('downloadLink');
+                    downloadLink.href = canvas.toDataURL('image/png');
+                    downloadLink.style.display = 'inline-block';
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    </script>
+</body>
+</html>

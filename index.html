@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIOS</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: black;
+            font-family: 'Courier New', Courier, monospace;
+            color: white;
+            font-size: 20px;
+            cursor: none; 
+            overflow: hidden; 
+        }
+
+        .content-wrapper {
+            height: 100%;
+            overflow-y: auto; 
+            padding-right: 20px; 
+        }
+
+        .center {
+            text-align: left;
+            white-space: pre-wrap; 
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 16px;
+            text-shadow: 0 0 10px rgb(20, 20, 20);
+            line-height: 1.3; 
+        }
+        .option {
+            cursor: pointer;
+            transition: color 0.3s;
+            line-height: 1.3; 
+            margin-bottom: 10px; 
+        }
+        .highlighted {
+            color: black;
+            background-color: white;
+        }
+        #loading-screen {
+            display: none;
+            background-color: rgba(22, 21, 21, 0.9);
+            width: 600px; 
+            padding: 30px; 
+            color: rgb(255, 255, 255);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+            border: 2px solid black;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 10px; 
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5); 
+        }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .progress-section {
+            margin: 15px 0;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #323232;
+            border-radius: 5px; 
+            overflow: hidden;
+        }
+        .progress {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(to right, #4b0000, #800000, #2e0000);
+}
+
+        #final-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            justify-content: center;
+            align-items: center;
+        }
+        .infinity-spinner {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin: auto;
+            overflow: hidden;
+        }
+        .line {
+            position: absolute;
+            width: 8px; 
+            height: 40px; 
+            background: linear-gradient(180deg, #ff6347, #800080); 
+            border-radius: 5px;
+            animation: stream 1s linear infinite;
+        }
+        @keyframes stream {
+            0% { transform: translate(0, 0); }
+            25% { transform: translate(0, -10px); }
+            50% { transform: translate(0, 0); }
+            75% { transform: translate(0, 10px); }
+            100% { transform: translate(0, 0); }
+        }
+        .spinning-circle {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 8px solid transparent;
+    border-top: 8px solid #4b0000; /* Dark red */
+    border-right: 8px solid #800000; /* Medium red */
+    border-bottom: 8px solid #2e0000; /* Darker red */
+    border-left: 8px solid #800000;  /* Medium red */
+    animation: spin 1.5s linear infinite;
+}
+
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-section div,
+.progress-section span,
+.progress-section::before {
+    color: white;
+}
+
+#loading-container h2 {
+    color: white;
+}
+#loading-container {
+    color: white;
+}
+
+    </style>
+</head>
+<body>
+    <div class="content-wrapper">
+        <div class="center" id="boot-screen">
+            <p></p>
+
+            <p></p>
+
+            <p></p>
+
+            <p></p>
+
+            <div class="option" id="option1">Start Floki</div>
+            <div class="option" id="option2">Unstable Boot (DEV Access only)</div>
+            <div class="option" id="option3">Live Boot</div>
+        </div>
+    </div>
+
+    <div id="loading-screen">
+        <button class="close-btn" onclick="closeLoadingScreen()">X</button>
+        Starting Floki<br><br>
+        <div class="progress-section">
+            <div id="loading-message">Isolating Environment...</div>
+            <div class="progress-bar">
+                <div id="progress1" class="progress"></div>
+            </div>
+            <span id="loading-percent1">0%</span>
+        </div>
+        <div class="progress-section">
+            <div id="loading-message2">Loading drivers...</div>
+            <div class="progress-bar">
+                <div id="progress2" class="progress"></div>
+            </div>
+            <span id="loading-percent2">0%</span>
+        </div>
+        <div class="progress-section">
+            <div id="loading-message3">Loading setup...</div>
+            <div class="progress-bar">
+                <div id="progress3" class="progress"></div>
+            </div>
+            <span id="loading-percent3">0%</span>
+        </div>
+        <div class="progress-section">
+            <div id="loading-message4">Installing services...</div>
+            <div class="progress-bar">
+                <div id="progress4" class="progress"></div>
+            </div>
+            <span id="loading-percent4">0%</span>
+        </div>
+    </div>
+
+    <div id="final-screen">
+        <div class="spinning-circle"></div>
+    </div>
+
+    <script>
+        let bootScreen = document.getElementById('boot-screen');
+        let loadingScreen = document.getElementById('loading-screen');
+        let finalScreen = document.getElementById('final-screen');
+        let progressBars = [
+            { message: document.getElementById('loading-message'), progress: document.getElementById('progress1'), percent: document.getElementById('loading-percent1') },
+            { message: document.getElementById('loading-message2'), progress: document.getElementById('progress2'), percent: document.getElementById('loading-percent2') },
+            { message: document.getElementById('loading-message3'), progress: document.getElementById('progress3'), percent: document.getElementById('loading-percent3') },
+            { message: document.getElementById('loading-message4'), progress: document.getElementById('progress4'), percent: document.getElementById('loading-percent4') }
+        ];
+
+        let currentTask = 0;
+        let currentProgress = 0;
+        const loadingSteps = [100, 100, 100, 100];  // Total for each task
+
+        let options = document.querySelectorAll('.option');
+        let selectedOption = 0;
+
+        options[selectedOption].classList.add('highlighted');
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "ArrowUp") {
+                options[selectedOption].classList.remove('highlighted');
+                selectedOption = (selectedOption - 1 + options.length) % options.length;
+                options[selectedOption].classList.add('highlighted');
+            } else if (event.key === "ArrowDown") {
+                options[selectedOption].classList.remove('highlighted');
+                selectedOption = (selectedOption + 1) % options.length;
+                options[selectedOption].classList.add('highlighted');
+            } else if (event.key === "Enter") {
+                if (selectedOption === 0) {  // Estee OS selected
+                    bootScreen.style.display = 'none';
+                    loadingScreen.style.display = 'block';
+                    startLoading();
+                } else {
+                    alert(options[selectedOption].innerText + " booting not implemented.");
+                }
+            }
+        });
+
+        function startLoading() {
+            let loadInterval = setInterval(() => {
+                if (currentTask < progressBars.length) {
+                    currentProgress += 1;
+
+                    progressBars[currentTask].progress.style.width = currentProgress + "%";
+                    progressBars[currentTask].percent.innerText = currentProgress + "%";
+
+                    if (currentProgress >= loadingSteps[currentTask]) {
+                        currentProgress = 0; 
+                        currentTask++;
+                    }
+                }
+
+                if (currentTask >= progressBars.length) {
+                    clearInterval(loadInterval);
+                    showFinalScreen();
+                }
+            }, 100);
+        }
+
+        function showFinalScreen() {
+            loadingScreen.style.display = 'none';
+            finalScreen.style.display = 'flex';
+
+
+            setTimeout(() => {
+
+                finalScreen.style.pointerEvents = 'none'; 
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+            }, 23000);
+        }
+
+        function closeLoadingScreen() {
+            loadingScreen.style.display = 'none';
+            bootScreen.style.display = 'flex'; // Return to boot options
+        }
+
+        function showFinalScreen() {
+    loadingScreen.style.display = 'none';
+    finalScreen.style.display = 'flex';
+
+// Play power.mp3 sound in the last 2 seconds
+setTimeout(() => {
+    let audio = new Audio('power.mp3');
+    audio.play();
+}, 21000); // 23s total duration - 2s = 21s
+
+setTimeout(() => {
+    finalScreen.style.pointerEvents = 'none';
+    setTimeout(() => {
+        window.location.href = 'login.html';
+    }, 2000);
+}, 23000);
+
+}
+let loadInterval;  // Declare loadInterval globally for better control
+let currentDurations = [];  // Store random durations for each task
+
+function startLoading() {
+    // Initialize random durations for each progress bar task
+    currentDurations = progressBars.map(() => Math.floor(Math.random() * (35000 - 14000 + 1)) + 14000);  // Random time between 14s (14000ms) and 35s (35000ms)
+    loadProgress(0); // Start the first task
+}
+
+function loadProgress(taskIndex) {
+    if (taskIndex < progressBars.length) {
+        let progress = 0;
+        let duration = currentDurations[taskIndex];  // Get random duration for the task
+        let intervalTime = duration / 100;  // Split duration into 100 intervals (percentage points)
+        
+        let taskInterval = setInterval(() => {
+            if (progress < 100) {
+                progress++;
+                progressBars[taskIndex].progress.style.width = progress + "%";
+                progressBars[taskIndex].percent.innerText = progress + "%";
+            } else {
+                clearInterval(taskInterval);
+                // Move to the next task after this one finishes
+                loadProgress(taskIndex + 1);
+            }
+        }, intervalTime);
+    } else {
+        // All progress bars completed, show final screen
+        showFinalScreen();
+    }
+}
+
+    </script>
+
+    
+</body>
+</html>

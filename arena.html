@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Loading Screen</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: url('arena.png') no-repeat center center fixed;
+            background-size: cover;
+            height: 100vh;
+            width: 100vw;
+        }
+        .loading-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 75%;
+            height: 10px;
+            background: rgba(51, 51, 51, 0.7);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .loading-bar {
+            width: 0%;
+            height: 100%;
+            background: rgba(136, 136, 136, 0.7);
+            transition: width linear;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-container">
+        <div class="loading-bar" id="loadingBar"></div>
+    </div>
+    <script>
+        let bar = document.getElementById("loadingBar");
+        let duration = 180000; // 3 minutes in milliseconds
+        let startTime = Date.now();
+
+        function updateLoadingBar() {
+            let elapsedTime = Date.now() - startTime;
+            let progress = Math.min((elapsedTime / duration) * 100, 100);
+            bar.style.width = progress + "%";
+            if (progress < 100) {
+                requestAnimationFrame(updateLoadingBar);
+            }
+        }
+
+        updateLoadingBar();
+    </script>
+</body>
+</html>
